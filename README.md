@@ -1,1 +1,1 @@
-# clinica
+# CentroMedico
