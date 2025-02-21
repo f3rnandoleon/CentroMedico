@@ -26,11 +26,21 @@ function predictMelanoma($imagePath) {
 ?>
 <div class="container my-5">
     <div class="card shadow-lg">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-success text-white text-center">
             <h4 class="mb-0">Predicción de Melanoma</h4>
         </div>
         <div class="card-body">
             <form action="" method="POST" enctype="multipart/form-data">
+                <div class="mb-4">
+                    <label for="patient" class="form-label">Nombre Paciente</label>
+                    <select class="form-select" id="estcivil" name="estcivil">
+                        <option value="S">Paciente1</option>
+                        <option value="C">Paciente2</option>
+                        <option value="V">Paciente3</option>
+
+                    </select>
+                    
+                </div>
                 <div class="mb-4">
                     <label for="imageUpload" class="form-label">Sube una imagen de la lesión</label>
                     <input class="form-control" type="file" id="imageUpload" name="image" accept="image/*" required>
