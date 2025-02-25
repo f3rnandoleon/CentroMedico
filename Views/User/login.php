@@ -8,7 +8,7 @@
 <?php endif; unset($_SESSION['mensaje']); ?>
 
 <!-- Contenedor a pantalla completa con fondo verde y altura completa -->
-<div class="container-fluid bg-success min-vh-100 d-flex p-0 m-0">
+<div class="container-fluid min-vh-100 d-flex p-0 m-0" style="background-color:#28a688;">
   <div class="row flex-nowrap w-100 g-0">
     
     <!-- Columna Izquierda -->

@@ -4,14 +4,14 @@ if(!isset($_SESSION)) {
 }
 ?>
 
-<div class="container text-center px-4 py-3"><!-- Espaciado vertical superior e inferior -->
+<div class="container text-center px-4 py-3" style="max-height: 85vh; overflow-y:auto;"><!-- Espaciado vertical superior e inferior -->
 
   <h1 class="text-success mb-3">Lista de Pacientes</h1>
 
   <!-- Formulario de búsqueda -->
-  <form class="row g-3 mb-4" action="?controller=paciente&action=buscar" method="post">
+  <form class="row g-3 mb-3" action="?controller=paciente&action=buscar" method="post">
     <div class="col-auto">
-      <input class="form-control" id="cedula" name="cedula" type="text" placeholder="1717899322">
+      <input class="form-control" id="search" name="search" type="text" placeholder="1717899322">
     </div>
     <div class="col-auto">
       <button type="submit" class="btn btn-success">
@@ -37,7 +37,7 @@ if(!isset($_SESSION)) {
           <th>Apellidos</th>
           <th>Ocupación</th>
           <th>Email</th>
-          <th>Tipo de Sangre</th>
+          <th>Telefono</th>
           <th colspan="3" class="text-center">Acciones</th>
         </tr>
       </thead>
@@ -49,7 +49,7 @@ if(!isset($_SESSION)) {
             <td><?php echo $paciente->getApellidos(); ?></td>
             <td><?php echo $paciente->getOcupacion(); ?></td>
             <td><?php echo $paciente->getEmail(); ?></td>
-            <td><?php echo $paciente->getTposangre(); ?></td>
+            <td><?php echo $paciente->getTelefono(); ?></td>
             
             <!-- Botón Actualizar -->
             <td>
@@ -67,13 +67,7 @@ if(!isset($_SESSION)) {
               </button>
             </td>
             
-            <!-- Botón Crear/Editar Historia Clínica -->
-            <td>
-              <button type="button" class="btn btn-success"
-                      onclick="location.href='?controller=historia&action=register&id=<?php echo $paciente->getId()?>'">
-                <i class="bi bi-journal-plus"></i> Crear/Editar H. Clínica
-              </button>
-            </td>
+           
           </tr>
         <?php } ?>
       </tbody>

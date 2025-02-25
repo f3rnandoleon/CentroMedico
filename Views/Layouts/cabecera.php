@@ -6,8 +6,9 @@
     
     <!-- Marca / Título -->
     <a class="navbar-brand d-flex align-items-center text-success fw-bold" href="http://localhost/app-medicos/">
-      <i class="bi bi-cloud me-2"></i> 
-      App Médicos
+    <img src="assets\images\logo-piellog.png" alt="Logo"
+           style="width: 8vh; heigth: 6vh; margin-right: 2vh;">
+      Centro Medico de la Piel
     </a>
 
     <!-- Botón hamburguesa si tuvieras más cosas que colapsar, 

@@ -1,10 +1,10 @@
 <?php if(!isset($_SESSION)) { session_start(); } ?>
 
-<div class="container text-center px-4 py-3 navbar-nav-scroll">
+<div class="container  px-4 py-3 " style="max-height: 87vh; overflow-y:auto;">
   <!-- Card principal -->
   <div class="card shadow">
     <!-- Cabecera con color verde -->
-    <div class="card-header bg-success text-white">
+    <div class="card-header text-center text-white " style="background-color:#28a688;">
       <h3 class="mb-0">Registro de Paciente</h3>
     </div>
     
@@ -48,7 +48,14 @@
                    placeholder="Ingrese la ocupación del paciente" required autocomplete="off">
           </div>
         </div>
-        
+        <!-- Telefono -->
+        <div class="mb-3 row">
+          <label for="telefono" class="col-sm-2 col-form-label">Telefono:</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="telefono" name="telefono"
+                   placeholder="Ingrese el telefono del paciente" required autocomplete="off">
+          </div>
+        </div>
         <!-- Email -->
         <div class="mb-3 row">
           <label for="email" class="col-sm-2 col-form-label">Email:</label>
@@ -58,14 +65,7 @@
           </div>
         </div>
         
-        <!-- Tipo de Sangre -->
-        <div class="mb-3 row">
-          <label for="tposangre" class="col-sm-2 col-form-label">Tipo de Sangre:</label>
-          <div class="col-sm-10">
-            <input type="text" class="form-control" id="tposangre" name="tposangre"
-                   placeholder="Ingrese el tipo de sangre del paciente" required autocomplete="off">
-          </div>
-        </div>
+        
         
         <!-- Dirección -->
         <div class="mb-3 row">
@@ -108,7 +108,7 @@
           <label for="fnacimiento" class="col-sm-2 col-form-label">Fecha de nacimiento:</label>
           <div class="col-sm-10">
             <div class="input-group" id="datePicker">
-              <input type="text" class="form-control" name="date" required autocomplete="off">
+              <input type="date" class="form-control" name="date" required autocomplete="off">
               <span class="input-group-text">
                 <span class="glyphicon glyphicon-calendar"></span>
               </span>
@@ -116,6 +116,8 @@
           </div>
         </div>
         
+
+
         <!-- Botones Guardar / Cancelar -->
         <div class="row mt-4">
           <div class="col-sm-2 offset-sm-2">
