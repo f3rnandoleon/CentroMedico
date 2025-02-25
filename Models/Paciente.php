@@ -1,10 +1,5 @@
 <?php 
-/**
-* Modelo para el acceso a la base de datos y funciones CRUD
-* Autor: Elivar Largo
-* Sitio Web: wwww.ecodeup.com
-* Fecha: 22-03-2017
-*/
+
 class Paciente
 {
 	private $id;  
@@ -16,11 +11,10 @@ class Paciente
 	private $genero;
 	private $fnacimiento;
 	private $email;
-	private $tposangre;
 	private $direccion;
-	private $usuario;	
+	private $telefono;	
 
-	function __construct($id, $cedula, $nombres, $apellidos, $ocupacion, $estcivil, $genero, $fnacimiento, $email,$tposangre, $direccion,$usuario)
+	function __construct($id, $cedula, $nombres, $apellidos, $ocupacion, $estcivil, $genero, $fnacimiento, $email, $direccion,$telefono)
 	{
 		$this->setId($id);
 		$this->setCedula($cedula);
@@ -31,9 +25,8 @@ class Paciente
 		$this->setGenero($genero);
 		$this->setFnacimiento($fnacimiento);
 		$this->setEmail($email);
-		$this->setTposangre($tposangre);
 		$this->setDireccion($direccion);
-		$this->setUsuario($usuario);
+		$this->setTelefono($telefono);
 	}
 
 
@@ -146,14 +139,6 @@ class Paciente
 		$this->email = $email;
 	}
 
-	public function getTposangre(){
-		return $this->tposangre;
-	}
-
-	public function setTposangre($tposangre){
-		$this->tposangre = $tposangre;
-	}
-
 	public function getDireccion(){
 		return $this->direccion;
 	}
@@ -162,12 +147,12 @@ class Paciente
 		$this->direccion = $direccion;
 	}
 
-	public function getUsuario(){
-		return $this->usuario;
+	public function getTelefono(){
+		return $this->telefono;
 	}
 
-	public function setUsuario($usuario){
-		$this->usuario = $usuario;
+	public function setTelefono($telefono){
+		$this->telefono = $telefono;
 	}
 	//opciones CRUD
 
@@ -177,7 +162,7 @@ class Paciente
 		//var_dump($paciente);
 		//die();
 			
-		$insert=$db->prepare('INSERT INTO pacientes VALUES(NULL,:cedula,:nombres, :apellidos, :ocupacion, :estcivil, :genero, :fnacimiento,:email,:tposangre,:direccion,:usuario)');
+		$insert=$db->prepare('INSERT INTO pacientes VALUES(NULL,:cedula,:nombres, :apellidos, :ocupacion, :estcivil, :genero, :fnacimiento,:email,:direccion,:telefono)');
 		$insert->bindValue('cedula',$paciente->getCedula());
 		$insert->bindValue('nombres',$paciente->getNombres());
 		$insert->bindValue('apellidos',$paciente->getApellidos());
@@ -186,23 +171,33 @@ class Paciente
 		$insert->bindValue('genero',$paciente->getGenero());
 		$insert->bindValue('fnacimiento',$paciente->getFnacimiento());
 		$insert->bindValue('email',$paciente->getEmail());
-		$insert->bindValue('tposangre',$paciente->getTposangre());
 		$insert->bindValue('direccion',$paciente->getDireccion());
-		$insert->bindValue('usuario',$paciente->getUsuario());
+		$insert->bindValue('telefono',$paciente->getTelefono());
 		$insert->execute();
 	}
 
-	//función para obtener todos los pacientes por usuario
-	public static function all($idUsuario){
-		$listaPacientes =[];
-		$db=Db::getConnect();
-		$sql=$db->prepare('SELECT * FROM pacientes WHERE USUARIO=:id order by id');
-		$sql->bindParam(':id',$idUsuario);
+	//función para obtener todos los pacientes por telefono
+	public static function all(){
+		$listaPacientes = [];
+		$db = Db::getConnect();
+		$sql = $db->prepare('SELECT * FROM pacientes ORDER BY id');
 		$sql->execute();
-
-		// carga en la $listaPacientes cada registro desde la base de datos
+	
+		// Carga en la $listaPacientes cada registro desde la base de datos
 		foreach ($sql->fetchAll() as $paciente) {
-			$listaPacientes[]= new Paciente($paciente['id'],$paciente['cedula'], $paciente['nombres'],$paciente['apellidos'],$paciente['ocupacion'], $paciente['estcivil'], $paciente['genero'], $paciente['fnacimiento'], $paciente['email'],$paciente['tposangre'], $paciente['direccion'], $paciente['usuario']);
+			$listaPacientes[] = new Paciente(
+				$paciente['id'],
+				$paciente['cedula'], 
+				$paciente['nombres'],
+				$paciente['apellidos'],
+				$paciente['ocupacion'], 
+				$paciente['estcivil'], 
+				$paciente['genero'], 
+				$paciente['fnacimiento'], 
+				$paciente['email'],
+				$paciente['direccion'], 
+				$paciente['telefono']
+			);
 		}
 		return $listaPacientes;
 	}
@@ -216,10 +211,10 @@ class Paciente
 		$select->execute();
 		//asignarlo al objeto paciente
 		$pacienteDb=$select->fetch();
-		$paciente= new Paciente($pacienteDb['id'],$pacienteDb['cedula'],$pacienteDb['nombres'],$pacienteDb['apellidos'],$pacienteDb['ocupacion'],$pacienteDb['estcivil'], $pacienteDb['genero'],$pacienteDb['fnacimiento'],$pacienteDb['email'],$pacienteDb['tposangre'], $pacienteDb['direccion'],$pacienteDb['usuario']);
+		$paciente= new Paciente($pacienteDb['id'],$pacienteDb['cedula'],$pacienteDb['nombres'],$pacienteDb['apellidos'],$pacienteDb['ocupacion'],$pacienteDb['estcivil'], $pacienteDb['genero'],$pacienteDb['fnacimiento'],$pacienteDb['email'], $pacienteDb['direccion'],$pacienteDb['telefono']);
 		return $paciente;
 	}
-
+	
 	//la función para obtener un paciente por cédula
 	public static function getByCedula($cedula){
 		//buscar
@@ -229,7 +224,7 @@ class Paciente
 		$select->execute();
 		//asignarlo al objeto paciente
 		$pacienteDb=$select->fetch();
-		$paciente= new Paciente($pacienteDb['id'],$pacienteDb['cedula'],$pacienteDb['nombres'],$pacienteDb['apellidos'],$pacienteDb['ocupacion'],$pacienteDb['estcivil'], $pacienteDb['genero'],$pacienteDb['fnacimiento'],$pacienteDb['email'],$pacienteDb['tposangre'], $pacienteDb['direccion'],$pacienteDb['usuario']);
+		$paciente= new Paciente($pacienteDb['id'],$pacienteDb['cedula'],$pacienteDb['nombres'],$pacienteDb['apellidos'],$pacienteDb['ocupacion'],$pacienteDb['estcivil'], $pacienteDb['genero'],$pacienteDb['fnacimiento'],$pacienteDb['email'], $pacienteDb['direccion'],$pacienteDb['telefono']);
 		return $paciente;
 	}
 
@@ -238,7 +233,7 @@ class Paciente
 		//var_dump($paciente);
 		//die();
 		$db=Db::getConnect();
-		$update=$db->prepare('UPDATE pacientes SET nombres=:nombres, apellidos=:apellidos,ocupacion=:ocupacion, estcivil=:estcivil, genero=:genero,fnacimiento=:fnacimiento, email=:email, tposangre=:tposangre, direccion=:direccion, usuario=:usuario  WHERE id=:id');
+		$update=$db->prepare('UPDATE pacientes SET nombres=:nombres, apellidos=:apellidos,ocupacion=:ocupacion, estcivil=:estcivil, genero=:genero,fnacimiento=:fnacimiento, email=:email, direccion=:direccion, telefono=:telefono  WHERE id=:id');
 		$update->bindValue('id',$paciente->getId());
 		//$update->bindValue('cedula',$paciente->getCedula());
 		$update->bindValue('nombres',$paciente->getNombres());
@@ -248,9 +243,8 @@ class Paciente
 		$update->bindValue('genero',$paciente->getGenero());
 		$update->bindValue('fnacimiento',$paciente->getFnacimiento());
 		$update->bindValue('email',$paciente->getEmail());
-		$update->bindValue('tposangre',$paciente->getTposangre());
 		$update->bindValue('direccion',$paciente->getDireccion());
-		$update->bindValue('usuario',$paciente->getUsuario());
+		$update->bindValue('telefono',$paciente->getTelefono());
 		$update->execute();
 	}
 
@@ -317,6 +311,28 @@ class Paciente
 		$delete->bindValue('id',$id);
 		$delete->execute();
 	}
+	public static function search($searchTerm) {
+        $db = Db::getConnect();  // Suponiendo que tienes un método Db::getConnect() para obtener la conexión
 
+        // Preparar la consulta con varios campos
+        $sql = "SELECT * FROM pacientes WHERE 
+                cedula LIKE :searchTerm OR 
+                nombres LIKE :searchTerm OR 
+                apellidos LIKE :searchTerm OR 
+                telefono LIKE :searchTerm";
+
+        // Ejecutar la consulta
+        $query = $db->prepare($sql);
+        $query->bindValue(':searchTerm', '%' . $searchTerm . '%');
+        $query->execute();
+
+        // Devolver los resultados
+        $pacientes = [];
+        while ($row = $query->fetch()) {
+            $pacientes[] = new Paciente($row['id'], $row['cedula'], $row['nombres'], $row['apellidos'], $row['ocupacion'], $row['estcivil'], $row['genero'], $row['fnacimiento'], $row['email'], $row['direccion'], $row['telefono']);
+        }
+
+        return $pacientes;
+    }
 }
 

@@ -5,8 +5,8 @@ if (!isset($_SESSION)) {
 ?>
 
 <!-- Barra lateral con fondo verde (bg-success) y texto blanco -->
-<div class="d-flex flex-column flex-shrink-0 bg-success text-white"
-     style="width: 250px; min-height: 100vh;">
+<div class="d-flex flex-column flex-shrink-0  text-white"
+     style="width: 250px; min-height: 100vh; background-color:#28a688;">
 
   <!-- Sección superior: ícono y nombre de usuario -->
   <div class="p-3 text-center border-bottom border-light">
@@ -22,7 +22,7 @@ if (!isset($_SESSION)) {
   </div>
 
   <!-- Menú vertical -->
-  <ul class="nav nav-pills flex-column mb-auto mt-3">
+  <ul class="nav nav-pills flex-column mb-auto mt-3 px-3 fs-6">
     <?php if (isset($_SESSION['usuario'])) { ?>
       <!-- Pacientes -->
       <li class="nav-item">
