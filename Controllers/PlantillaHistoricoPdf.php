@@ -22,7 +22,7 @@ class PlantillaHistoricoPdf extends FPDF
 
     }
 
-    function detallePersonales($genero, $edad_menarquia,$edad_menopausia, $vida_sexual,$ciclos,$edad_gestacion,$numero_partos,$numero_abortos,$numero_cesareas,$fecha_ultima_menstruacion,$fecha_ultima_menstruacion,$fecha_ultimo_parto,$hijos_vivos,$mp_familiar,$descripcion)
+    function detallePersonales($genero, $edad_menarquia,$edad_menopausia, $vida_sexual,$ciclos,$edad_gestacion,$numero_partos,$numero_abortos,$numero_cesareas,$fecha_ultima_menstruacion,$fecha_ultimo_parto,$hijos_vivos,$mp_familiar,$descripcion)
     {
         //DATOS AP
         $this->SetFont('Arial','B',9);

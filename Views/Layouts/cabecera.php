@@ -5,7 +5,7 @@
   <div class="container-fluid">
     
     <!-- Marca / Título -->
-    <a class="navbar-brand d-flex align-items-center text-success fw-bold" href="http://localhost/app-medicos/">
+    <a class="navbar-brand d-flex align-items-center text-success fw-bold" href="http://localhost/CentroMedico/index.php">
     <img src="assets\images\logo-piellog.png" alt="Logo"
            style="width: 8vh; heigth: 6vh; margin-right: 2vh;">
       Centro Medico de la Piel

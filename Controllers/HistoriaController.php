@@ -1,11 +1,5 @@
 <?php 
-/**
-* Controlador HistoriaController, para administrar las historias y datos relacionados
-* Autor: Elivar Largo
-* Sitio Web: wwww.ecodeup.com
-* Fecha: 23-03-2017
-*/
- //error_reporting (0);
+
 if(!isset($_SESSION)) 
     { 
         session_start(); 
@@ -16,121 +10,80 @@ class HistoriaController
 {	
 	function __construct(){}
 
-	public function register(){
-		$idPaciente=$_GET['id'];
+	 // Función para registrar o actualizar una historia clínica
+	 public function register(){
+        require_once('Views/Historia/register.php');
 
-		$historia=HistoClinica::getByPaciente($idPaciente);
-		
-		if ($historia->getId()!=NULL) {//si existe la HC se va al archivo update.php
-			$paciente=Paciente::getById($idPaciente);
-			$aFamiliares=HistoClinica::getAntFamiliarByPaciente($idPaciente);
-			$aPersonal=HistoClinica::getAntPersonalByPaciente($idPaciente);
-			$eVisual=HistoClinica::getExaVisualByPaciente($idPaciente);
-			//var_dump($aPersonal);
-			//die();
+    }
 
-			require_once('Views/Historia/update.php');	
-		} else {// sino se va al register.php
-			$numeroHistoria=$this->generarNumero();
-			//obtengo el paciente para crear la historia
-			$paciente=Paciente::getById($idPaciente);
-			require_once('Views/Historia/register.php');
-		}	
-		
-	}
+	// Función para guardar una historia clínica
+    public function save(){
+        $idHistoria = $this->generarNumero();
+        $historia = new HistoClinica(
+            null, 
+            $_POST['fecha'], 
+            $idHistoria, 
+            $_POST['motivo'], 
+            $_POST['diagnostico'], 
+            $_POST['recomendacion'], 
+            $_POST['paciente']
+        );
+		HistoClinica::save($historia);
+		$_SESSION['mensaje']='Registro guardado satisfactoriamente';		
+		$this->show();
+		//header('Location: index.php');
+    }
 
-	//guarda una HC, antecedentes familiares, personales y exámenes visuales
-	public function save(){
-		$idPaciente=$_POST['paciente'];
-		$historia= new HistoClinica(null,$_POST['fecha'], $_POST['numero'], $_POST['paciente']);
+	// Función para mostrar todas las historias clínicas
+    public function show(){
+        $historias = HistoClinica::all();
+        
+        // Paginación
+        $lista_historias = [];
+        $registros = 4; // Debe ser siempre par
+        if (count($historias) > $registros) { // Solo si hay más historias que los registros mostrados
+            $botones = ceil(count($historias) / $registros);
+            
+            if (!isset($_GET['boton'])) { // La primera vez carga los registros del botón 1
+                $res = $registros * 1;
+                for ($i = 0; $i < $res; $i++) { 
+                    $lista_historias[] = $historias[$i];
+                }
+            } else {
+                // Multiplica el número del botón por el número de registros mostrados
+                $res = $registros * $_GET['boton'];
+                for ($i = $res - $registros; $i < $res; $i++) { 
+                    if ($i < count($historias)) {
+                        $lista_historias[] = $historias[$i];
+                    }
+                }
+            }
+        } else { // Si no hay paginación
+            $botones = 0;
+            $lista_historias = $historias;
+        }
 
-		try {
-			//validadar que no se creen más de una HC por paciente
-			$historia1=HistoClinica::getByPaciente($idPaciente);
-			if ($historia1->getId()==NULL) {
-				HistoClinica::save($historia);
-				$this->saveAntFamiliares();
-				$this->saveAntPersonales();
-				$this->saveExaVisuales();
-				$_SESSION['mensaje']='Registro guardado satisfactoriamente';
-				$this->show();
-			} else {
-				$_SESSION['mensaje']='El paciente ya tiene una Historia Clinica';
-			}					
-		} catch (Exception $e) {
-			echo 'Excepción capturada: ',  $e->getMessage(), "\n";
-		}
-		
-	}
-
-	//muestra las historias clínicas creadas
-	public function show(){
-		$historias=HistoClinica::all();
-		//var_dump($historias);
-		//die();
-		//$paciente=Paciente::getById($_SESSION['usuario_id']);
-		//paginator
-		$lista_historias="";
-		$registros=2; // debe ser siempre par
-		if (count($historias)>$registros) { // solo página si el número de registros mostrados es menor que los registros de la bd
-			if ((count($historias)%$registros)==0) {
-				$botones=count($historias)/$registros;
-			}else{//si el total de registros de la bd es impar			
-				$botones=(count($historias)/$registros+1);
-			}
-			
-			if (!isset($_GET['boton'])) {//la primera vez carga los registros del botón 1
-				$res=$registros*1;
-				for ($i=0; $i < $res ; $i++) { 
-					$lista_historias[]=$historias[$i];
-				}
-			}else{
-				//multiplica el número de botón por el número de registros mostrados
-				$res=$registros*$_GET['boton'];
-				//resta el valor mayor de registros a mostrar menos el número de registros mostrados
-				for ($i=$res-$registros; $i < $res; $i++) { 
-					if ($i<count($historias)) {
-						$lista_historias[]=$historias[$i];
-					}				
-				}
-			}
-		}else{// si no se presenta el paginador
-			$botones=0;
-			$lista_historias=$historias;
-		}
-		require_once('Views/Historia/show.php');
-	}
+        require_once('Views/Historia/show.php');
+    }
 
 	public function error(){
 		require_once('Views/User/error.php');
 	} 
 
-	//actualiza HC, enfermedades familiares, personales y exámenes visuales
-	public function update(){
-		$this->updateAntFamiliares();
-		$this->updateAntPersonales();
-		$this->updateExaVisuales();
-		//$historia= new HistoClinica($_POST['idHistoria'],$_POST['fecha'], $_POST['numero'], $_POST['paciente']);
-
-		//var_dump($paciente);
-		//die();
-		//HistoClinica::update($historia);
-
-		$_SESSION['mensaje']='Registro actualizado satisfactoriamente';
-		$this->show();
-		//header('Location: index.php');
-	}
 
 	//muestra una historia clínicas por  numero
 	public function buscar(){
-		// si el campo numero no es vació
-		if (!empty($_POST['numero'])) {
-			$lista_historias[]=HistoClinica::getByNumero($_POST['numero']);
-			$botones=0;
+		if (!empty($_POST['searchTerm'])) {
+			$searchTerm = $_POST['searchTerm'];
+			
+			// Buscar historias clínicas basadas en número
+			$lista_historias = HistoClinica::search($searchTerm);
+			$botones = 0;
 			require_once('Views/Historia/show.php');
-		}else{//si está vacía trae todos los registros
+		} else {
+			// Si no hay término de búsqueda, mostrar todas las historias clínicas
 			$this->show();
-		}		
+		}
 	}
 
 	public function generarNumero(){
@@ -150,7 +103,7 @@ class HistoriaController
 
 
 	/*** Enfermedades familiares***/
-	//guardar las enfermedades familiares
+	/*/guardar las enfermedades familiares
 	public function saveAntFamiliares(){
 		$antFamiliar= new AntFamiliar(null,$_POST['cardiopatia'], $_POST['diabetes'], $_POST['cancer'], $_POST['enfcardiovasculares'], $_POST['hipertension'], $_POST['enfmentales'], $_POST['tubercolosis'], $_POST['enfinfecciosas'], $_POST['malformacion'], $_POST['otra'], $_POST['descripcionfami'],$_POST['paciente']);
 		//var_dump($antFamiliar);
@@ -166,7 +119,7 @@ class HistoriaController
 	}
 
 	/*** Antecedentes personales***/
-	//guardar antecedentes personales
+	/*/guardar antecedentes personales
 	public function saveAntPersonales(){
 		//var_dump($_POST['hipertension']);
 		//die();
@@ -181,7 +134,7 @@ class HistoriaController
 
 
 	/*** Examenes visuales***/
-	//guardar examenes visuales
+	/*/guardar examenes visuales
 	public function saveExaVisuales(){
 		$exaVisual= new ExaVisual(null,$_POST['descripcionvisual'],$_POST['paciente'] );
 		HistoClinica::saveExaVisual($exaVisual);
@@ -191,7 +144,7 @@ class HistoriaController
 	public function updateExaVisuales(){
 		$exaVisual= new ExaVisual($_POST['idvisual'],$_POST['descripcionvisual'],$_POST['paciente'] );
 		HistoClinica::updateExaVisual($exaVisual);
-	}
+	}*/
 
 
 	//REPORTES

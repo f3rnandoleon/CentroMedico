@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image'])) {
 ?>
 
 <!-- Encabezado principal -->
-<div class="container my-4" >
+<div class="container my-4 px-4" >
   <div class="card shadow">
     <!-- Encabezado del card -->
     <div class="card-header text-center text-white" style="background-color:#28a688;">
