@@ -7,54 +7,50 @@
   </div>
 <?php endif; unset($_SESSION['mensaje']); ?>
 
-<!-- Contenedor a pantalla completa con fondo verde y altura completa -->
-<div class="container-fluid min-vh-100 d-flex p-0 m-0" style="background-color:#28a688;">
-  <div class="row flex-nowrap w-100 g-0">
-    
-    <!-- Columna Izquierda -->
-    <div class="col-md-6 col-sm-12 position-relative p-0">
-      <!-- Logo posicionado absolutamente en la esquina sup-izq con algo de margen -->
-      <img src="assets\images\logo-piel.png" alt="Logo"
-           class="position-absolute top-5 start-5 m-3"
-           style="display:absolute; max-width: 150px; left: 250px; top: 20px;">
+<!-- Contenedor principal de altura completa -->
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center p-0" style="background-color: #28a688;">
+  
+  <!-- Card con dos columnas -->
+  <div class="card shadow border-0" style="width: 90%; max-width: 1000px; border-radius: 20px;">
+    <div class="row g-0">
       
-      <!-- Contenido centrado vertical y horizontalmente, con texto en blanco -->
-      <div class="d-flex flex-column justify-content-center align-items-center text-white h-100 p-4">
-        <h2 class="text-center mb-3">
-          Centro Médico de la Piel <br>
-          “Dr. Johnny de la Riva Guzmán”
-        </h2>
-        <p class="text-start" style="max-width: 450px;">
-          Una clínica dermatológica de confianza en La Paz, Bolivia, que ofrece cuidado
-          integral para la salud y belleza de la piel. Cuenta con un equipo certificado
-          de dermatólogos y esteticistas que brindan soluciones personalizadas para
-          diversas necesidades cutáneas.
-        </p>
+      <!-- Columna Izquierda: Imagen a pantalla completa -->
+      <div class="col-md-6 d-none d-md-block p-0" 
+           style="
+             background: url('assets/images/imagenPlasma.png') center/cover no-repeat;
+             border-radius: 20px 0 0 20px;
+             min-height: 100%;
+           ">
+        <!-- Si no deseas nada de texto aquí, déjalo vacío -->
       </div>
-    </div>
-    
-    <!-- Columna Derecha (Formulario de Login) -->
-    <div class="col-md-6 col-sm-12 d-flex align-items-center justify-content-center p-4">
       
-      <!-- Card más ancha (max-width: 600px) y con padding adicional en .card-body -->
-      <div class="card w-100" style="max-width: 500px;">
-        <div class="card-body p-5"><!-- p-5 da más espacio interno -->
-          <h3 class="text-center text-success mb-4">Bienvenido</h3>
-          <p>Ingrese sus Credenciales </p>
+      <!-- Columna Derecha: Formulario de login -->
+      <div class="col-md-6 d-flex align-items-center justify-content-center" 
+           style="background-color: #fefefe; border-radius: 0 20px 20px 0;">
+        
+        <!-- Contenedor interno con padding -->
+        <div class="p-4" style="width: 100%; max-width: 400px;">
+          <h3 class="text-center text-success mb-3">Bienvenido</h3>
+          <p>Ingrese sus Credenciales</p>
+          
+          <!-- Formulario -->
           <form action="?controller=usuario&action=login" method="post">
+            
+            <!-- Campo Correo -->
             <div class="mb-4">
               <label for="email" class="form-label">Correo electrónico</label>
               <input type="email" class="form-control" id="email" name="email"
                      placeholder="Ingrese su email" required autocomplete="off">
             </div>
             
+            <!-- Campo Contraseña -->
             <div class="mb-4">
               <label for="pwd" class="form-label">Contraseña</label>
               <input type="password" class="form-control" id="pwd" name="pwd"
                      placeholder="Ingrese su contraseña" required>
             </div>
             
-            <!-- Sección Recordarme y Olvidaste contraseña -->
+            <!-- Sección Recordarme / Olvidaste contraseña -->
             <div class="row mb-4">
               <div class="col-6 d-flex align-items-center">
                 <div class="form-check m-0">
@@ -77,13 +73,12 @@
             <!-- Enlace de registro -->
             <p class="text-center mt-4 mb-0">
               ¿No tienes una cuenta?
-              <a href="?controller=usuario&action=register" class="text-success">Regístrarse</a>
+              <a href="?controller=usuario&action=register" class="text-success">Regístrate</a>
             </p>
           </form>
-        </div>
-      </div><!-- Fin card -->
-      
-    </div><!-- Fin col derecha -->
-    
-  </div><!-- Fin row -->
+        </div><!-- Fin contenedor interno -->
+        
+      </div><!-- Fin col derecha -->
+    </div><!-- Fin row -->
+  </div><!-- Fin card -->
 </div><!-- Fin container-fluid -->
