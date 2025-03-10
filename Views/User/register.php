@@ -32,13 +32,13 @@
           <!-- Título -->
           <h4 class="text-center mb-3 text-success mt-3">Registrarse</h4>
           
-          <!-- (Ejemplo de botón Google comentado)
+          <!-- (Ejemplo de botón Google comentado)-->
           <button class="btn btn-light w-100 mb-3" style="border: 1px solid #ccc;">
             <strong style="color: #4285f4;">G</strong> Regístrate en Google
           </button>
           <p class="text-center text-muted mb-2">O utilice su dirección de correo</p>
           <hr>
-          -->
+          
 
           <!-- Formulario -->
           <form action="?controller=usuario&action=save" method="post" onsubmit="return validarPasswords();">
