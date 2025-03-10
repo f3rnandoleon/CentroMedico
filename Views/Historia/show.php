@@ -1,7 +1,16 @@
 <?php 
 if (!isset($_SESSION)) { 
   session_start(); 
-} 
+}
+
+// Recuperar los parámetros de ordenamiento actuales (si existen)
+$current_sort = isset($_SESSION['sort']) ? $_SESSION['sort'] : 'fregistro';
+$current_dir  = isset($_SESSION['dir']) ? $_SESSION['dir'] : 'asc';
+
+// Función auxiliar para invertir la dirección
+function invertDir($dir) {
+  return $dir === 'asc' ? 'desc' : 'asc';
+}
 ?>
 
 <div class="container mt-3 px-4">
@@ -33,10 +42,38 @@ if (!isset($_SESSION)) {
       <!-- Encabezado con fondo verde claro -->
       <thead class="table-success">
         <tr>
-          <th>Fecha Registro</th>
-          <th>N. Historia Clínica</th>
-          <th>Nombres Paciente</th>
-          <th>Apellidos Paciente</th>
+          <th>
+            <a class="text-dark text-decoration-none" href="?controller=historia&action=show&sort=fregistro&dir=<?php echo ($current_sort === 'fregistro') ? invertDir($current_dir) : 'asc'; ?>">
+              Fecha Registro
+              <?php if($current_sort === 'fregistro'): ?>
+                <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
+              <?php endif; ?>
+            </a>
+          </th>
+          <th>
+            <a class="text-dark text-decoration-none" href="?controller=historia&action=show&sort=numero&dir=<?php echo ($current_sort === 'numero') ? invertDir($current_dir) : 'asc'; ?>">
+              N. Historia Clínica
+              <?php if($current_sort === 'numero'): ?>
+                <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
+              <?php endif; ?>
+            </a>
+          </th>
+          <th>
+            <a class="text-dark text-decoration-none" href="?controller=historia&action=show&sort=nombres&dir=<?php echo ($current_sort === 'nombres') ? invertDir($current_dir) : 'asc'; ?>">
+              Nombres Paciente
+              <?php if($current_sort === 'nombres'): ?>
+                <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
+              <?php endif; ?>
+            </a>
+          </th>
+          <th >
+            <a class="text-dark text-decoration-none" href="?controller=historia&action=show&sort=apellidos&dir=<?php echo ($current_sort === 'apellidos') ? invertDir($current_dir) : 'asc'; ?>">
+              Apellidos Paciente
+              <?php if($current_sort === 'apellidos'): ?>
+                <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
+              <?php endif; ?>
+            </a>
+          </th>
           <th class="text-center">Acciones</th>
         </tr>
       </thead>
@@ -48,19 +85,23 @@ if (!isset($_SESSION)) {
             <td>
               <?php 
                 $paciente = Paciente::getById($historia->getPaciente());
-                echo $paciente->getNombres();
+                echo $paciente ? $paciente->getNombres() : 'N/A';
               ?>
             </td>
-            <td><?php echo $paciente->getApellidos(); ?></td>
+            <td>
+              <?php 
+                echo $paciente ? $paciente->getApellidos() : 'N/A';
+              ?>
+            </td>
             <td>
               <!-- Botón Ver Historia -->
               <button type="button" class="btn btn-info"
-                      onclick="location.href='?controller=historia&action=reporteHistorico&id=<?php echo $paciente->getId(); ?>'">
+                      onclick="location.href='?controller=historia&action=reporteHistorico&numero=<?php echo $historia->getNumero(); ?>'">
                 <i class="bi bi-eye"></i> Ver Historia
               </button>
               <!-- Botón Generar Reporte -->
               <button type="button" class="btn btn-success"
-                      onclick="location.href='?controller=historia&action=register&id=<?php echo $paciente->getId(); ?>'">
+                      onclick="location.href='?controller=historia&action=reporte&id=<?php echo $historia->getId(); ?>'">
                 <i class="bi bi-file-earmark-plus"></i> Generar Reporte
               </button>
             </td>
@@ -73,8 +114,8 @@ if (!isset($_SESSION)) {
     <nav>
       <ul class="pagination">
         <?php for ($i = 1; $i <= $botones; $i++) { ?>
-          <li class="page-item">
-            <a class="page-link" href="?controller=historia&action=show&boton=<?php echo $i; ?>">
+          <li class="page-item <?php echo (isset($_GET['boton']) && $_GET['boton'] == $i) ? 'active' : ''; ?>">
+            <a class="page-link" href="?controller=historia&action=show&boton=<?php echo $i; ?>&sort=<?php echo $current_sort; ?>&dir=<?php echo $current_dir; ?>">
               <?php echo $i; ?>
             </a>
           </li>

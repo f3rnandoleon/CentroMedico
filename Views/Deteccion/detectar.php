@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image'])) {
 ?>
 
 <!-- Encabezado principal -->
-<div class="container my-4 px-4" >
+<div class="container my-3 px-4" >
   <div class="card shadow">
     <!-- Encabezado del card -->
     <div class="card-header text-center text-white" style="background-color:#28a688;">
@@ -95,7 +95,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image'])) {
     <div class="card-body">
       <form action="" method="POST" enctype="multipart/form-data">
         <div class="row">
-          
+          <!-- Fecha de Registro (auto) -->
+        <div class="mb-3 row" style="display: none">
+          <label for="fecha" class="col-sm-2 col-form-label">Fecha Registro:</label>
+          <div class="col-sm-10" style="display: none">
+            <input 
+              type="date" 
+              class="form-control" 
+              id="fecha" 
+              name="fecha" 
+              readonly 
+              value="<?php echo date('Y-m-d'); ?>"
+            >
+          </div>
+        </div>
           <!-- Columna izquierda: Imagen o placeholder -->
           <div class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0">
             <?php if (!empty($imagePath)): ?>
@@ -112,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image'])) {
               </div>
             <?php endif; ?>
           </div>
-          
+            
           <!-- Columna derecha: Paciente y Resultado -->
           <div class="col-md-8">
             <div class="row g-3">
@@ -120,13 +133,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image'])) {
               <!-- Seleccionar paciente -->
               <div class="col-sm-6">
                 <label class="form-label">Paciente</label>
-                <select class="form-select" name="paciente" >
-                  <!-- Ajusta según tu lógica de pacientes -->
-                  <option value="">Seleccione</option>
-                  <option value="Paciente1">Paciente1</option>
-                  <option value="Paciente2">Paciente2</option>
-                  <option value="Paciente3">Paciente3</option>
-                </select>
+                <select name="paciente" class="form-select" required>
+                 <option value="">Seleccione un paciente</option>
+                <?php $pacientes = Paciente::all();
+                foreach ($pacientes as $paciente) { ?>
+                <option value="<?= $paciente->getId(); ?>"><?php echo $paciente->getNombres()," ",$paciente->getApellidos(); ?></option>
+            <?php } ?>
+        </select>
               </div>
               
               <!-- Resultado de la predicción -->
@@ -171,11 +184,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image'])) {
         </div><!-- Fin row superior -->
         
         <!-- Observaciones del Dermatólogo -->
-        <div class="mt-4">
+        <div class="mt-3">
           <label class="form-label">Observaciones del Dermatólogo</label>
-          <textarea class="form-control" rows="2" placeholder="Ingrese Texto..."></textarea>
+          <textarea name="observaciones" class="form-control" rows="2" placeholder="Ingrese Texto..."></textarea>
         </div>
-        
+        <div class="mt-2">
+          <label class="form-label">Recomendaciones</label>
+          <textarea name="recomendacion" class="form-control" rows="1" placeholder="Ingrese Texto..."></textarea>
+        </div>
         
 
       </form>
@@ -183,10 +199,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image'])) {
 
     <!-- Footer del card con botón grande -->
     <div class="card-footer text-center">
-        <button type="submit" class="btn text-white" style="background-color:#28a688;" form="detectionForm" name="action" value="save">
-        GUARDAR DETECCIÓN
-      </button>
+        <button type="?controller=deteccion&action=save" class="btn text-white" style="background-color:#28a688;" form="detectionForm" name="action" value="save">
+          GUARDAR DETECCIÓN
+        </button>
     </div>
   </div><!-- Fin card -->
 
 </div>
+
+<!-- Si deseas usar la funcionalidad de datepicker antigua, mantén estos enlaces,
+     aunque para un input[type="date"] no es estrictamente necesario. -->
+
+     <link rel="stylesheet" 
+      href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.min.css" />
+<link rel="stylesheet" 
+      href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker3.min.css" />
+<script 
+  src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.min.js">
+</script>
+
+<script>
+  // Solo si deseas usar datepicker adicionalmente
+  $(document).ready(function() {
+    // Ejemplo de inicialización
+    $('#datePicker1, #datePicker2').datepicker({
+      autoclose: true,
+      format: 'yyyy-mm-dd',
+      todayHighlight: true
+    });
+  });
+</script>

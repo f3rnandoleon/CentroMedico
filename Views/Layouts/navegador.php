@@ -1,6 +1,7 @@
 <?php
 if (!isset($_SESSION)) { 
     session_start(); 
+    ob_start(); // Habilitar buffer de salida
 }
 ?>
 
@@ -23,7 +24,14 @@ if (!isset($_SESSION)) {
   <!-- Menú vertical -->
   <ul class="nav nav-pills flex-column mb-auto mt-3 px-3 fs-6">
     <?php if (isset($_SESSION['usuario'])) { ?>
-      
+      <li class="nav-item">
+      <a href="?controller=usuario&action=welcome" 
+      role="button"          
+          class="nav-link text-white d-flex justify-content-between align-items-center">
+                 <span><i class="bi bi-book"></i> Inicio</span>
+                 
+              </a>       
+      </li>
       <!-- Pacientes -->
       <li class="nav-item">
         <a class="nav-link text-white d-flex justify-content-between align-items-center"
@@ -61,7 +69,7 @@ if (!isset($_SESSION)) {
            role="button"
            aria-expanded="false"
            aria-controls="menuConsultas">
-          <span><i class="bi bi-file-medical"></i> Historias Clínico</span>
+          <span><i class="bi bi-file-medical"></i> Historial Pacientes</span>
           <i class="bi bi-chevron-down rotate-on-collapse"></i>
         </a>
         <div class="collapse" id="menuConsultas" data-bs-parent="#sidebarMenu">
@@ -69,13 +77,13 @@ if (!isset($_SESSION)) {
             <li>
               <a href="?controller=historia&action=register"
                  class="text-white text-decoration-none d-block py-1">
-                 Nueva Historia
+                 Nuevo Historial
               </a>
             </li>
             <li>
               <a href="?controller=historia&action=show"
                  class="text-white text-decoration-none d-block py-1">
-                 Ver Historias
+                 Ver Historial
               </a>
             </li>
           </ul>
@@ -104,7 +112,16 @@ if (!isset($_SESSION)) {
           </ul>
         </div>
       </li>
+      <!-- Reportes -->
 
+      <li class="nav-item">
+      <a href="?controller=usuario&action=reportGeneral" 
+         role="button"          
+          class="nav-link text-white d-flex justify-content-between align-items-center">
+                 <span><i class="bi bi-book"></i> Reportes Generales</span>
+                 
+              </a>       
+      </li>
     <?php } ?>
   </ul>
 </aside>

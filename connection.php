@@ -1,9 +1,5 @@
 <?php
-	/**
-	* Conexión a la base de datos
-	* Autor: Elivar Largo
-	* Sitio Web: wwww.ecodeup.com
-	*/
+
 	class Db
 	{
 		private static $instance=NULL;

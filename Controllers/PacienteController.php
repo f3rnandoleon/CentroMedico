@@ -1,10 +1,5 @@
 <?php 
-/**
-* Controlador PacienteController, para administrar los pacientes y datos relacionados
-* Autor: Elivar Largo
-* Sitio Web: wwww.ecodeup.com
-* Fecha: 22-03-2017
-*/
+
 if(!isset($_SESSION)) 
     { 
         session_start(); 
@@ -27,16 +22,66 @@ class PacienteController
 	}
 
 	//muestra los pacientes por usuario
-	public function show(){
+	public function show() {
 		$pacientes = Paciente::all();
+		
+		// 1. Leer parámetros de ordenamiento
+		$sort = isset($_GET['sort']) ? $_GET['sort'] : 'cedula'; // Por defecto, ordena por cédula
+		$dir  = isset($_GET['dir']) ? $_GET['dir'] : 'asc';      // Ascendente por defecto
+		
+		// 2. Ordenar el arreglo $pacientes según la columna indicada
+		usort($pacientes, function($a, $b) use ($sort, $dir) {
+			// Determinar valores a comparar según la columna
+			switch ($sort) {
+				case 'cedula':
+					$valA = $a->getCedula();
+					$valB = $b->getCedula();
+					break;
+				case 'nombres':
+					$valA = $a->getNombres();
+					$valB = $b->getNombres();
+					break;
+				case 'apellidos':
+					$valA = $a->getApellidos();
+					$valB = $b->getApellidos();
+					break;
+				case 'ocupacion':
+					$valA = $a->getOcupacion();
+					$valB = $b->getOcupacion();
+					break;
+				case 'email':
+					$valA = $a->getEmail();
+					$valB = $b->getEmail();
+					break;
+				case 'telefono':
+					$valA = $a->getTelefono();
+					$valB = $b->getTelefono();
+					break;
+				default:
+					// Si no coincide, usar cédula como fallback
+					$valA = $a->getCedula();
+					$valB = $b->getCedula();
+					break;
+			}
 	
-		// Paginator
+			// Comparar
+			if ($valA == $valB) return 0;
+	
+			// Dependiendo de la dirección
+			if ($dir === 'asc') {
+				return ($valA < $valB) ? -1 : 1;
+			} else {
+				return ($valA > $valB) ? -1 : 1;
+			}
+		});
+	
+		// 3. Paginación
 		$lista_pacientes = [];
-		$registros = 4; // debe ser siempre par
-		if (count($pacientes) > $registros) { // Solo paginar si hay más registros que el límite
+		$registros = 6; // Debe ser siempre par
+		if (count($pacientes) > $registros) { 
 			$botones = (int) ceil(count($pacientes) / $registros);
 			
-			if (!isset($_GET['boton'])) { // Primera carga
+			if (!isset($_GET['boton'])) { 
 				$res = $registros * 1;
 				for ($i = 0; $i < $res; $i++) { 
 					$lista_pacientes[] = $pacientes[$i];
@@ -49,12 +94,18 @@ class PacienteController
 					}                
 				}
 			}
-		} else { // No necesita paginador
+		} else { 
 			$botones = 0;
 			$lista_pacientes = $pacientes;
 		}
+	
+		// 4. (Opcional) Guardar sort y dir en sesión para reutilizar en la vista
+		$_SESSION['sort'] = $sort;
+		$_SESSION['dir']  = $dir;
+	
 		require_once('Views/Paciente/show.php');
 	}
+	
 	
 
 	public function error(){

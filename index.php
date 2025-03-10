@@ -18,6 +18,13 @@
 		}
 		
 	}	
-	//carga la vista layout.php
-	require_once('Views/Layouts/layout.php');
+	// Si la acción es la de generar PDF, llamamos directamente al controlador
+    if ($controller == 'historia' && $action == 'reporte') {
+        // Se llama al controlador y su método, sin cargar layout
+        require_once('Controllers/generar_reporte.php');
+        exit();
+    }
+    
+    // Para el resto de acciones, se carga el layout
+    require_once('Views/Layouts/layout.php');
 ?>

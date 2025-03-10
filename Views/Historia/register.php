@@ -79,7 +79,20 @@ if (!isset($_SESSION)) {
             >
           </div>
         </div>
-        
+        <!-- Observacion -->
+        <div class="mb-3 row" style="display: none">
+          <label for="observaciones" class="col-sm-2 col-form-label">Observacion:</label>
+          <div class="col-sm-10">
+            <input 
+              type="text" 
+              class="form-control" 
+              id="observaciones" 
+              name="observaciones" 
+              placeholder="Ingrese el Observacion" 
+
+            >
+          </div>
+        </div>
         <!-- Recomendación -->
         <div class="mb-3 row">
           <label for="recomendacion" class="col-sm-2 col-form-label">Recomendación:</label>
