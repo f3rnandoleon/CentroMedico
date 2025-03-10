@@ -1,10 +1,5 @@
 <?php
-/**
-* Modelo para el acceso a la base de datos y funciones CRUD
-* Autor: Elivar Largo
-* Sitio Web: wwww.ecodeup.com
-* Fecha: 25-03-2017
-*/
+
 class ExaComplementario
 {
 	private $id;

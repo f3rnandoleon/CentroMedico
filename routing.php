@@ -12,6 +12,9 @@
 		switch($controller){
 			case 'usuario':
 				require_once('Models/Usuario.php');
+				require_once('Models/HistoClinica.php');
+				require_once('Models/Paciente.php');
+
 				$controller= new UsuarioController();
 				break; 
 			case 'paciente':
@@ -23,6 +26,8 @@
 				require_once('Models/AntFamiliar.php');
 				require_once('Models/HistoClinica.php');
 				require_once('Models/ExaVisual.php');
+				require_once('Models/Paciente.php');
+				
 				$controller=new HistoriaController();
 				break; 
 			case 'consulta':
@@ -37,6 +42,9 @@
 				break;
 			case 'deteccion':  // Nuevo controlador
 				 // Carga el modelo si es necesario
+				 require_once('Models/Usuario.php');
+				require_once('Models/HistoClinica.php');
+				require_once('Models/Paciente.php');
 				$controller = new DeteccionController();
 				break;
 		}
@@ -47,12 +55,16 @@
 
 	//array con los controladores y sus respectivas acciones
 	$controllers= array(
-						'usuario'=>['show','register','save','showregister', 'update', 'delete', 'showLogin','login','logout','error', 'welcome','validarCedula'],
+						'usuario'=>['show','register','save','showregister', 'update', 'delete', 'showLogin','login','logout','error', 'welcome','reportGeneral','validarCedula'],
 						'paciente'=>['register','save', 'show', 'showupdate','update', 'delete','buscar'],
-						'historia'=>['register','save', 'show', 'showupdate','update', 'delete','reporteHistorico','buscar'],
+						'historia'=>['register','save', 'show', 'showupdate','update', 'delete','reporteHistorico','reporte','buscar'],
 						'consulta'=>['register','save','show', 'showupdate','update','recetaPdf','buscar'],
-						'deteccion'=>['detectar']
+						'deteccion'=>['detectar','save']
 						);
+						if ($controller == 'historia' && $action == 'reporte') {
+							require_once('./Controllers/generar_reporte.php');
+							exit; // Finaliza la ejecución para que no se cargue el layout
+						}
 	//verifica que el controlador enviado desde index.php esté dentro del arreglo controllers
 	if (array_key_exists($controller, $controllers)) {
 

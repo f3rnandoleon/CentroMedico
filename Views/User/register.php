@@ -1,105 +1,134 @@
+<?php if (isset($_SESSION['mensaje'])): ?>
+  <div 
+    class="alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3 shadow"
+    style="z-index: 9999; max-width: 400px;"
+  >
+    <strong><?php echo $_SESSION['mensaje']; ?></strong>
+  </div>
+<?php endif; unset($_SESSION['mensaje']); ?>
 
-<div class="container-fluid bg-success min-vh-100 d-flex" >
-  <!-- La clase "d-flex align-items-center" y "height:100vh" ayudan a centrar verticalmente el contenido -->
+<!-- Contenedor principal de altura completa, color verde de fondo -->
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center p-0" style="background-color: #28a688;">
   
-  <div class="row w-100 align-items-center ">
-    <!-- Columna Izquierda -->
-    <div class="col-md-6 col-sm-12 position-relative p-0">
-      <!-- Logo posicionado absolutamente en la esquina sup-izq con algo de margen -->
-      <img src="assets\images\logo-piel.png" alt="Logo"
-           class="position-absolute top-5 start-5 m-3"
-           style="display:absolute; max-width: 200px; left: 200px; top: -150px;">
+  <!-- Card con dos columnas -->
+  <div class="card shadow border-0" style="width: 90%; max-width: 1000px; border-radius: 20px;">
+    <div class="row g-0">
       
-      <!-- Contenido centrado vertical y horizontalmente, con texto en blanco -->
-      <div class="d-flex flex-column justify-content-center align-items-center text-white h-100 p-4">
-        <h2 class="text-center mb-3">
-          Centro Médico de la Piel <br>
-          “Dr. Johnny de la Riva Guzmán”
-        </h2>
-        <p class="text-start" style="max-width: 450px;">
-          Una clínica dermatológica de confianza en La Paz, Bolivia, que ofrece cuidado
-          integral para la salud y belleza de la piel. Cuenta con un equipo certificado
-          de dermatólogos y esteticistas que brindan soluciones personalizadas para
-          diversas necesidades cutáneas.
-        </p>
-      </div>
-    </div>
-
-    <!-- COLUMNA DERECHA: Formulario de Registro -->
-    <div class="col-md-6">
-      <div class="card shadow">
-        <div class="card-body px-5 py-4">
-          <!-- Título -->
-          <h4 class="text-center mb-3 text-success mt-3">Registrarse</h4>
+      <!-- Columna Derecha: Formulario de registro -->
+      <div class="col-md-6 d-flex align-items-center justify-content-center" 
+           style="background-color: #fefefe; border-radius: 20px 0 0 20px ;">
+        
+        <!-- Contenedor interno con padding -->
+        <div class="p-4" style="width: 100%; max-width: 400px;">
           
-          <!-- (Ejemplo de botón Google comentado)-->
-          <button class="btn btn-light w-100 mb-3" style="border: 1px solid #ccc;">
-            <strong style="color: #4285f4;">G</strong> Regístrate en Google
-          </button>
-          <p class="text-center text-muted mb-2">O utilice su dirección de correo</p>
-          <hr>
+          <!-- Título principal -->
+          <h3 class="text-center text-success mb-3">Regístrarse</h3>
+          <p>Complete sus datos para crear la cuenta</p>
           
-
           <!-- Formulario -->
           <form action="?controller=usuario&action=save" method="post" onsubmit="return validarPasswords();">
             
-              <!-- Nombre y Apellido en la misma fila -->
-              <div class="row">
-                <div class="col-6 mb-3">
-                  <label for="nombres" class="form-label">Nombre</label>
-                  <input type="text" class="form-control" id="nombres" name="nombres"
-                         required placeholder="Nombre" autocomplete="off">
-                </div>
-                <div class="col-6 mb-3">
-                  <label for="apellidos" class="form-label">Apellido</label>
-                  <input type="text" class="form-control" id="apellidos" name="apellidos"
-                         required placeholder="Apellido" autocomplete="off">
-                </div>
+            <!-- Nombre y Apellido en la misma fila -->
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label for="nombres" class="form-label">Nombre</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="nombres" 
+                  name="nombres"
+                  required 
+                  placeholder="Nombre" 
+                  autocomplete="off"
+                >
               </div>
-
-              <!-- Email -->
-              <div class="mb-3">
-                <label for="email" class="form-label">Dirección de correo electrónico</label>
-                <input type="email" class="form-control" id="email" name="email"
-                       required placeholder="correo@ejemplo.com" autocomplete="off">
+              <div class="col-6 mb-3">
+                <label for="apellidos" class="form-label">Apellido</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="apellidos" 
+                  name="apellidos"
+                  required 
+                  placeholder="Apellido" 
+                  autocomplete="off"
+                >
               </div>
+            </div>
 
-              <!-- Contraseña -->
-              <div class="mb-3">
-                <label for="pwd" class="form-label">Contraseña</label>
-                <input type="password" class="form-control" id="pwd" name="pwd"
-                       required placeholder="Contraseña"
-                       oninput="verificarCoincidencia();">
-              </div>
+            <!-- Email -->
+            <div class="mb-3">
+              <label for="email" class="form-label">Correo electrónico</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="email" 
+                name="email"
+                required 
+                placeholder="correo@ejemplo.com" 
+                autocomplete="off"
+              >
+            </div>
 
-              <!-- Confirmar Contraseña -->
-              <div class="mb-3">
-                <label for="pwd2" class="form-label">Confirmar contraseña</label>
-                <input type="password" class="form-control" id="pwd2" name="pwd2"
-                       required placeholder="Repita la contraseña"
-                       oninput="verificarCoincidencia();">
-              </div>
+            <!-- Contraseña -->
+            <div class="mb-3">
+              <label for="pwd" class="form-label">Contraseña</label>
+              <input 
+                type="password" 
+                class="form-control" 
+                id="pwd" 
+                name="pwd"
+                required 
+                placeholder="Contraseña"
+                oninput="verificarCoincidencia();"
+              >
+            </div>
 
-              <!-- Mensaje de error -->
-              <div id="mensajeError" style="color: red;"></div>
-			  			
-              <!-- Botón de envío -->
-              <button type="submit" class="btn btn-success w-100 my-3">
-                Regístrese ahora
-              </button>
-			  <p class="">
-                    ¿Ya tiene una cuenta?
-                <a href="?controller=usuario&action=showLogin" class="text-success">Iniciar Sesion</a>
+            <!-- Confirmar Contraseña -->
+            <div class="mb-3">
+              <label for="pwd2" class="form-label">Confirmar contraseña</label>
+              <input 
+                type="password" 
+                class="form-control" 
+                id="pwd2" 
+                name="pwd2"
+                required 
+                placeholder="Repita la contraseña"
+                oninput="verificarCoincidencia();"
+              >
+            </div>
+
+            <!-- Mensaje de error -->
+            <div id="mensajeError" class="text-danger"></div>
+            
+            <!-- Botón de registro -->
+            <button type="submit" class="btn btn-success w-100 my-3">
+              Regístrese
+            </button>
+            
+            <!-- Enlace "Ya tiene cuenta?" -->
+            <p class="text-center mb-0">
+              ¿Ya tiene una cuenta?
+              <a href="?controller=usuario&action=showLogin" class="text-success">Iniciar Sesión</a>
             </p>
           </form>
-        </div>
+        </div><!-- Fin contenedor interno -->
+        
+      </div><!-- Fin col derecha -->
+      <!-- Columna Izquierda: Imagen a pantalla completa -->
+      <div class="col-md-6 d-none d-md-block p-0" 
+           style="
+             background: url('assets/images/imagenPlasma.png') center/cover no-repeat;
+             border-radius: 0 20px 20px 0;
+             min-height: 100%;
+           ">
+        <!-- Deja vacío si no deseas texto aquí -->
       </div>
-    </div>
-    
-  </div>
-</div>
+    </div><!-- Fin row -->
+  </div><!-- Fin card -->
+</div><!-- Fin container-fluid -->
 
-<!-- Scripts para validar contraseñas (sin librerías externas) -->
+<!-- Scripts para validar contraseñas -->
 <script>
   function verificarCoincidencia() {
     const pwd  = document.getElementById('pwd').value;
@@ -119,8 +148,8 @@
 
     if (pwd !== pwd2) {
       alert('Las contraseñas no coinciden');
-      return false; // Evita el envío del formulario
+      return false; 
     }
-    return true; // Permite el envío
+    return true; 
   }
 </script>

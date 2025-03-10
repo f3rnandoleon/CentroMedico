@@ -1,23 +1,29 @@
 <?php 
-/**
-* Modelo para el acceso a la base de datos y funciones CRUD
-* Autor: Elivar Largo
-* Sitio Web: wwww.ecodeup.com
-* Fecha: 22-03-2017
-*/
+
 class HistoClinica
 {
 	private $id;
 	private $fregistro;
 	private $numero;
+	private $motivo;
+	private $diagnostico;
+	private $observaciones;
+	private $recomendacion;
+	private $imagen;
 	private $paciente;
 	
-	function __construct($id, $fregistro, $numero, $paciente)
+	function __construct($id, $fregistro, $numero, $motivo, $diagnostico,$observaciones, $recomendacion, $imagen, $paciente)
 	{
 		$this->setId($id);
 		$this->setFregistro($fregistro);
 		$this->setNumero($numero);
+		$this->setMotivo($motivo);
+		$this->setDiagnostico($diagnostico);
+		$this->setDiagnostico($observaciones);
+		$this->setRecomendacion($recomendacion);
+		$this->setImagen($imagen);
 		$this->setPaciente($paciente);
+
 	}
 
 	/***FUNCIONES Getters y Setters***/
@@ -44,7 +50,42 @@ class HistoClinica
 	public function setNumero($numero){
 		$this->numero = $numero;
 	}
+	
+	public function getMotivo(){
+		return $this->motivo;
+	}
 
+	public function setMotivo($motivo){
+		$this->motivo = $motivo;
+	}
+	public function getDiagnostico(){
+		return $this->diagnostico;
+	}
+
+	public function setDiagnostico($diagnostico){
+		$this->diagnostico = $diagnostico;
+	}
+	public function getObservaciones(){
+		return $this->observaciones;
+	}
+
+	public function setObservaciones($observaciones){
+		$this->observaciones = $observaciones;
+	}
+	public function getRecomendacion(){
+		return $this->recomendacion;
+	}
+
+	public function setRecomendacion($recomendacion){
+		$this->recomendacion = $recomendacion;
+	}
+	public function getImagen(){
+		return $this->imagen;
+	}
+
+	public function setImagen($imagen){
+		$this->imagen = $imagen;
+	}
 	public function getPaciente(){
 		return $this->paciente;
 	}
@@ -60,51 +101,149 @@ class HistoClinica
 		//var_dump($paciente);
 		//die();
 			
-		$insert=$db->prepare('INSERT INTO histoclinicas VALUES(NULL,:fecha,:numero, :paciente)');
-		$insert->bindValue('fecha',$histoclinica->getFregistro());
-		$insert->bindValue('numero',$histoclinica->getNumero());
-		$insert->bindValue('paciente',$histoclinica->getPaciente());
+		$insert=$db->prepare('INSERT INTO histoclinicas VALUES(NULL,:fecha, :numero, :motivo, :diagnostico,:observaciones, :recomendacion,:imagen, :paciente)');
+		$insert->bindValue('fecha', $histoclinica->getFregistro());
+		$insert->bindValue('numero', $histoclinica->getNumero());
+		$insert->bindValue('motivo', $histoclinica->getMotivo());
+		$insert->bindValue('diagnostico', $histoclinica->getDiagnostico());
+		$insert->bindValue('observaciones', $histoclinica->getObservaciones());
+		$insert->bindValue('recomendacion', $histoclinica->getRecomendacion());
+		$insert->bindValue('imagen', $histoclinica->getImagen());
+		$insert->bindValue('paciente', $histoclinica->getPaciente());
 		$insert->execute();
 	}
 
 	//función para obtener todas la historias clínicas
 	public static function all(){
-		$listaHistorias =[];
-		$db=Db::getConnect();
-		$sql=$db->query('SELECT * FROM histoclinicas order by id');
-
-		// carga en la $listaHistorias cada registro desde la base de datos
+		$listaHistorias = [];
+		$db = Db::getConnect();
+		$sql = $db->query('SELECT * FROM histoclinicas ORDER BY id');
+	
+		// Carga en la $listaHistorias cada registro desde la base de datos
 		foreach ($sql->fetchAll() as $historia) {
-			$listaHistorias[]= new HistoClinica($historia['id'],$historia['fregistro'], $historia['numero'],$historia['paciente']);
+			// Crear un objeto HistoClinica con todos los atributos de la base de datos
+			$listaHistorias[] = new HistoClinica(
+				$historia['id'],
+				$historia['fregistro'],
+				$historia['numero'],
+				$historia['motivo'],
+				$historia['diagnostico'],
+				$historia['observaciones'],
+				$historia['recomendacion'],
+				$historia['imagen'],
+				$historia['paciente']
+			);
 		}
+	
 		return $listaHistorias;
 	}
 
 	//la función para obtener una HC por el id del paciente
 	public static function getByPaciente($idPaciente){
-		//buscar
-		$db=Db::getConnect();
-		$select=$db->prepare('SELECT * FROM histoclinicas WHERE PACIENTE=:id');
-		$select->bindParam('id',$idPaciente);
+		$db = Db::getConnect();
+		$select = $db->prepare('SELECT * FROM histoclinicas WHERE paciente = :id');
+		$select->bindParam('id', $idPaciente);
 		$select->execute();
-
-		$historiaDb=$select->fetch();
-		$historia= new HistoClinica($historiaDb['id'],$historiaDb['fregistro'],$historiaDb['numero'],$historiaDb['paciente']);
-		return $historia;
+	
+		// Fetch el registro de la base de datos
+		$historiaDb = $select->fetch();
+	
+		// Crear un objeto HistoClinica con todos los atributos de la base de datos
+		if ($historiaDb) {
+			$historia = new HistoClinica(
+				$historiaDb['id'],
+				$historiaDb['fregistro'],
+				$historiaDb['numero'],
+				$historiaDb['motivo'],
+				$historiaDb['diagnostico'],
+				$historiaDb['observaciones'],
+				$historiaDb['recomendacion'],
+				$historiaDb['imagen'],
+				$historiaDb['paciente']
+			);
+			return $historia;
+		}
+		return null; // Retorna null si no se encontró ningún registro
 	}
 
 	//la función para obtener una HC por el numero
 	public static function getByNumero($numero){
-		//buscar
-		$db=Db::getConnect();
-		$select=$db->prepare('SELECT * FROM histoclinicas WHERE numero=:numero');
-		$select->bindParam('numero',$numero);
+		$db = Db::getConnect();
+		$select = $db->prepare('SELECT * FROM histoclinicas WHERE numero = :numero');
+		$select->bindParam('numero', $numero);
 		$select->execute();
-
-		$historiaDb=$select->fetch();
-		$historia= new HistoClinica($historiaDb['id'],$historiaDb['fregistro'],$historiaDb['numero'],$historiaDb['paciente']);
-		return $historia;
+	
+		// Fetch el registro de la base de datos
+		$historiaDb = $select->fetch();
+	
+		// Crear un objeto HistoClinica con todos los atributos de la base de datos
+		if ($historiaDb) {
+			$historia = new HistoClinica(
+				$historiaDb['id'],
+				$historiaDb['fregistro'],
+				$historiaDb['numero'],
+				$historiaDb['motivo'],
+				$historiaDb['diagnostico'],
+				$historiaDb['observaciones'],
+				$historiaDb['recomendacion'],
+				$historiaDb['imagen'],
+				$historiaDb['paciente']
+			);
+			return $historia;
+		}
+		return null; // Retorna null si no se encontró ningún registro
 	}
+	//la función para obtener una HC por el numero
+	public static function getBy($id){
+		$db = Db::getConnect();
+		$select = $db->prepare('SELECT * FROM histoclinicas WHERE id = :id');
+		$select->bindParam('id', $id);
+		$select->execute();
+	
+		// Fetch el registro de la base de datos
+		$historiaDb = $select->fetch();
+	
+		// Crear un objeto HistoClinica con todos los atributos de la base de datos
+		if ($historiaDb) {
+			$historia = new HistoClinica(
+				$historiaDb['id'],
+				$historiaDb['fregistro'],
+				$historiaDb['numero'],
+				$historiaDb['motivo'],
+				$historiaDb['diagnostico'],
+				$historiaDb['observaciones'],
+				$historiaDb['recomendacion'],	
+				$historiaDb['imagen'],
+				$historiaDb['paciente']
+			);
+			return $historia;
+		}
+		return null; // Retorna null si no se encontró ningún registro
+	}
+	public static function search($searchTerm) {
+        $db = Db::getConnect();
+
+        // Consulta para buscar en múltiples atributos
+        $sql = "SELECT h.* FROM histoclinicas h 
+                LEFT JOIN pacientes p ON h.paciente = p.id
+                WHERE h.numero LIKE :searchTerm 
+                OR p.nombres LIKE :searchTerm 
+                OR p.apellidos LIKE :searchTerm";
+        
+        $query = $db->prepare($sql);
+        $query->bindValue(':searchTerm', '%' . $searchTerm . '%');
+        $query->execute();
+
+        $historias = [];
+        while ($row = $query->fetch()) {
+            $historias[] = new HistoClinica(
+                $row['id'], $row['fregistro'], $row['numero'], 
+                $row['motivo'], $row['diagnostico'],$row['observaciones'], $row['recomendacion'],$row['imagen'], $row['paciente']
+            );
+        }
+
+        return $historias;
+    }
 
 
 	/***FUNCIONES CRUD ANTFAMILIAR***/

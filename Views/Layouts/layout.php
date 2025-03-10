@@ -30,6 +30,7 @@
     <!-- Columna izquierda: sidebar (visible solo en pantallas grandes) -->
     <div class="d-none d-lg-flex flex-column bg-success text-white"
          style="width: 250px;">
+         
       <?php require('navegador.php'); ?>
     </div>
 

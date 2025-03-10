@@ -59,7 +59,7 @@ class CNN_Model(nn.Module):
 
 # Cargar el modelo y enviarlo a la GPU si está disponible
 model = CNN_Model().to(device)
-model.load_state_dict(torch.load("best_model10_0.2238.pth", map_location=device))
+model.load_state_dict(torch.load("best50_model_0.1547.pth", map_location=device))
 model.eval()  # Modo evaluación
 
 # Definir transformaciones de imagen

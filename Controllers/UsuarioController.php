@@ -75,7 +75,12 @@ class UsuarioController
 		require_once('Views/User/error.php');
 	} 
 	public function welcome(){
-		require_once('Views/bienvenido.php');
+		$historias=HistoClinica::all();
+		$pacientes=Paciente::all();
+		require_once('Views/Deteccion/bienvenido.php');
+	} 
+	public function reportGeneral(){
+		require_once('Views/ReportGeneral/show.php');
 	} 
 
 	public function showLogin(){
@@ -99,7 +104,7 @@ class UsuarioController
 		if ($existe) {
 			$_SESSION['usuario']=True;//inicio de sesion de usuario				
 			//require_once('Views/Layouts/layout.php');
-			header('Location: index.php');
+			$this->welcome();
 		}else{
 			$_SESSION['mensaje']='Email o contraseña invalidos';
 			$this->showLogin();
