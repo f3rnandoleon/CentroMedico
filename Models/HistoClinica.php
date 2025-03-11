@@ -19,7 +19,7 @@ class HistoClinica
 		$this->setNumero($numero);
 		$this->setMotivo($motivo);
 		$this->setDiagnostico($diagnostico);
-		$this->setDiagnostico($observaciones);
+		$this->setObservaciones($observaciones);
 		$this->setRecomendacion($recomendacion);
 		$this->setImagen($imagen);
 		$this->setPaciente($paciente);

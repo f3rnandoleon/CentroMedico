@@ -34,7 +34,7 @@
       width: 100%;
     }
   </style>
-<div class="container py-4" style="min-height: 100vh;">
+<div class="container py-4" style="max-height: 84vh; overflow-y:auto;">
     
     <h2 class="mb-4">Datos Generales</h2>
     

@@ -60,9 +60,7 @@
                   </label>
                 </div>
               </div>
-              <div class="col-6 text-end">
-                <a href="#" class="text-success">¿Olvidaste tu contraseña?</a>
-              </div>
+
             </div>
             
             <!-- Botón Ingresar -->

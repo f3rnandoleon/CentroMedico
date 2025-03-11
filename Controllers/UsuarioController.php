@@ -104,7 +104,7 @@ class UsuarioController
 		if ($existe) {
 			$_SESSION['usuario']=True;//inicio de sesion de usuario				
 			//require_once('Views/Layouts/layout.php');
-			$this->welcome();
+			header('Location: index.php');
 		}else{
 			$_SESSION['mensaje']='Email o contraseña invalidos';
 			$this->showLogin();

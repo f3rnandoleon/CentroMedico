@@ -36,15 +36,27 @@ if (!isset($_SESSION)) {
       display: inline-block;
       width: 150px; /* Ajusta el ancho para alinear */
     }
-    /* Si deseas resaltar campos vacíos, podrías usar un estilo especial */
+
+    /* Estilos para el diagnóstico con imagen */
+    .diagnostico-container {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .diagnostico-image {
+      max-width: 200px;
+      border: 2px solid #000;
+      border-radius: 8px;
+    }
+    .diagnostico-text {
+      padding: 10px;
+      border: 1px solid #000;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+    }
   </style>
-<div class="container mt-3">
-  <!-- Mensaje de sesión (si existe) -->
-  <?php if (isset($_SESSION['mensaje'])): ?>
-    <div class="alert alert-success">
-      <strong><?php echo $_SESSION['mensaje']; ?></strong>
-    </div>
-  <?php endif; unset($_SESSION['mensaje']); ?>
+
+<div class="container mt-3" style="max-height: 84vh; overflow-y:auto;">
   
   <?php if ($historia): ?>
     <div class="report-container">
@@ -55,7 +67,7 @@ if (!isset($_SESSION)) {
       </h3>
       
       <!-- Sección: INFORMACIÓN PACIENTE -->
-      <h5 class="section-title">INFORMACIÓN PACIENTE</h5>
+      <h5 class="section-title">INFORMACIÓN DEL PACIENTE</h5>
       <?php
         // Obtenemos datos del paciente
         $paciente = Paciente::getById($historia->getPaciente());
@@ -98,20 +110,32 @@ if (!isset($_SESSION)) {
         <strong>Número de Historia Clínica:</strong> <?php echo $historia->getNumero(); ?>
       </div>
       
-      <!-- Sección: ENFERMEDAD ACTUAL -->
-      <h5 class="section-title">Enfermedad Actual</h5>
-      <p><?php echo $historia->getDiagnostico() ?? "----"; ?></p>
-      
+      <!-- Sección: Diagnostico -->
+      <h5 class="section-title">Diagnóstico</h5>
+      <?php if (!empty($historia->getImagen())): ?>
+        <div class="diagnostico-container">
+          <!-- Imagen de la lesión -->
+          <img src="<?= $historia->getImagen(); ?>" alt="Imagen del diagnóstico" class="diagnostico-image">
+
+          <!-- Diagnóstico -->
+          <div class="diagnostico-text">
+            <strong>Resultado:</strong>
+            <p><?= $historia->getDiagnostico(); ?></p>
+          </div>
+        </div>
+      <?php else: ?>
+        <p><?= $historia->getDiagnostico() ?? "----"; ?></p>
+      <?php endif; ?>
+
       <!-- Sección: OBSERVACIONES DEL DERMATÓLOGO -->
       <h5 class="section-title">Observaciones del Dermatólogo</h5>
-      <!-- Ajusta según tu modelo. Si no tienes campo "Observaciones", podrías poner $historia->getObservacion() -->
-      <p><?php echo $historia->getObservacion() ?? "----"; ?></p>
+      <p><?php echo $historia->getObservaciones() ?? "----"; ?></p>
       
       <!-- Sección: RECOMENDACIONES -->
       <h5 class="section-title">Recomendaciones</h5>
       <p><?php echo $historia->getRecomendacion() ?? "----"; ?></p>
       
-      <!-- Ejemplo: Botón Volver -->
+      <!-- Botón Volver -->
       <div class="text-end mt-4">
         <a href="?controller=historia&action=show" class="btn btn-secondary">
           <i class="bi bi-arrow-left"></i> Volver

@@ -13,9 +13,9 @@ function invertDir($dir) {
 }
 ?>
 
-<div class="container mt-3 px-4">
+<div class="container mt-3 px-4" style="max-height: 84vh; overflow-y:auto;">
   <!-- Título en verde -->
-  <h1 class="text-success text-center mb-4">Resumen Historias Clínicas</h1>
+  <h1 class="text-success text-center mb-4">Historias Clínicas</h1>
   
   <!-- Formulario de búsqueda -->
   <form class="row g-3 align-items-center mb-3" action="?controller=historia&action=buscar" method="post">
@@ -37,7 +37,7 @@ function invertDir($dir) {
   <?php } unset($_SESSION['mensaje']); ?>
 
   <!-- Tabla de historiales -->
-  <div class="table-responsive mt-4">
+  <div class="table-responsive mt-4" >
     <table class="table table-hover align-middle">
       <!-- Encabezado con fondo verde claro -->
       <thead class="table-success">

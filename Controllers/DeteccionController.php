@@ -9,7 +9,10 @@ class DeteccionController {
         $uploadDir = "uploads/";
         $imageUrl = null;
     
-        if (isset($_FILES['image']) && $_FILES['image']['error'] == UPLOAD_ERR_OK) {
+        // Si la imagen ya fue detectada, usa la misma URL
+        if (!empty($_POST['image'])) {
+            $imageUrl = $_POST['image'];
+        } elseif (isset($_FILES['image']) && $_FILES['image']['error'] == UPLOAD_ERR_OK) {
             $imageTmpPath = $_FILES['image']['tmp_name'];
             $imageName = uniqid() . "_" . basename($_FILES['image']['name']);
             $imagePath = $uploadDir . $imageName;
@@ -22,7 +25,7 @@ class DeteccionController {
                 $imageUrl = $imagePath;
             }
         }
-    
+        
         $historia = new HistoClinica(
             null, $_POST['fecha'], $idHistoria, "Detección de Melanoma", 
             $_POST['resultado'] . " " . $_POST['probabilidad'], 
@@ -34,6 +37,7 @@ class DeteccionController {
         $_SESSION['mensaje'] = 'Registro guardado satisfactoriamente';  
         $this->detectar();
     }
+    
     
     
     public function generarNumero(){

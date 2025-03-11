@@ -1,4 +1,5 @@
 
+
 <?php 
 if(!isset($_SESSION)) { session_start(); }
 
@@ -24,22 +25,48 @@ $probabilityText = "";
 $errorMessage = "";
 $imagePath = "";
 
-// Manejo de la detección
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image'])) {
-    $imagePath = $_FILES['image']['tmp_name']; 
+// Directorio donde se guardarán las imágenes
+$uploadDir = "uploads/";
 
-    if ($_POST['action'] === 'detect') {
-        $result = predictMelanoma($imagePath);
-        if (isset($result['prediction'])) {
-            $predictionText = $result['prediction'];
-            $probabilityText = $result['probability'] ?? '';
-        } else {
-            $errorMessage = "Error: " . ($result['error'] ?? 'Desconocido');
-        }
+// Manejo de la detección
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_FILES['image']['tmp_name'])) {
+    $imageTmpPath = $_FILES['image']['tmp_name'];
+    $imageName = uniqid() . "_" . basename($_FILES['image']['name']);
+    $imagePath = $uploadDir . $imageName;
+
+    // Guardar la imagen en el directorio 'uploads'
+    if (!file_exists($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
     }
+
+    if (move_uploaded_file($imageTmpPath, $imagePath)) {
+        // Ahora que la imagen está guardada, hacer la predicción
+        if ($_POST['action'] === 'detect') {
+            $result = predictMelanoma($imagePath);
+            if (isset($result['prediction'])) {
+                $predictionText = $result['prediction'];
+                $probabilityText = $result['probability'] ?? '';
+            } else {
+                $errorMessage = "Error: " . ($result['error'] ?? 'Desconocido');
+            }
+        }
+    } else {
+        $errorMessage = "Error al guardar la imagen.";
+        $imagePath = ""; // Asegurar que no se guarde una ruta inválida
+    }
+} else {
+    $errorMessage = "Por favor, seleccione una imagen antes de detectar.";
 }
 ?>
-<div class="container my-3 px-4">
+<?php if (isset($_SESSION['mensaje'])): ?>
+  <div 
+    class="alert alert-success position-fixed top-20 start-50 translate-middle-x mt-3 shadow"
+    style="z-index: 9999; max-width: 400px;"
+  >
+    <strong><?php echo $_SESSION['mensaje']; ?></strong>
+  </div>
+<?php endif; unset($_SESSION['mensaje']); ?>
+<div class="container mt-3 px-4" style="max-height: 84vh; overflow-y:auto;">
     <div class="card shadow">
         <div class="card-header text-center text-white" style="background-color:#28a688;">
             <h5 class="mb-0">Datos previos del informe médico</h5>
@@ -51,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image'])) {
                     <!-- Imagen de la lesión -->
                     <div class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0">
                         <?php if (!empty($imagePath)): ?>
-                            <img src="data:image/jpeg;base64,<?= base64_encode(file_get_contents($imagePath)) ?>" 
+                            <img src="<?= $imagePath ?>" 
                                  alt="Imagen cargada" class="img-fluid border rounded" style="max-height: 200px;">
                         <?php else: ?>
                             <div class="border rounded d-flex align-items-center justify-content-center"
@@ -64,8 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image'])) {
                     <!-- Información del paciente y resultado -->
                     <div class="col-md-8">
                         <div class="row g-3">
-                            
-
                             <!-- Resultado de la predicción -->
                             <div class="col-sm-9">
                                 <label class="form-label">Resultado</label>
@@ -103,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image'])) {
                                     <div class="alert alert-danger mt-3">
                                         <?= htmlspecialchars($errorMessage); ?>
                                     </div>
-                                <?php endif; ?>
+                                <?php endif; $errorMessage=""; ?>
                             </div>
                         </div>
                     </div>
@@ -111,34 +136,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image'])) {
             </form>
 
             <!-- FORMULARIO PARA GUARDAR -->
-            <form action="?controller=deteccion&action=save" method="POST" enctype="multipart/form-data">
+            <form action="?controller=deteccion&action=save" method="POST">
                 <input type="hidden" name="fecha" value="<?= date('Y-m-d'); ?>">
                 <input type="hidden" name="resultado" value="<?= htmlspecialchars($predictionText) ?>">
                 <input type="hidden" name="probabilidad" value="<?= htmlspecialchars($probabilityText) ?>">
                 <input type="hidden" name="image" value="<?= $imagePath ?>">
+
                 <!-- Seleccionar paciente -->
                 <div class="mt-3">
-                                <label class="form-label">Paciente</label>
-                                <select name="paciente" class="form-select" required>
-                                    <option value="">Seleccione un paciente</option>
-                                    <?php $pacientes = Paciente::all();
-                                    foreach ($pacientes as $paciente) { ?>
-                                        <option value="<?= $paciente->getId(); ?>">
-                                            <?= $paciente->getNombres() . " " . $paciente->getApellidos(); ?>
-                                        </option>
-                                    <?php } ?>
-                                </select>
-                            </div>
+                    <label class="form-label">Paciente</label>
+                    <select name="paciente" class="form-select" required>
+                        <option value="">Seleccione un paciente</option>
+                        <?php $pacientes = Paciente::all();
+                        foreach ($pacientes as $paciente) { ?>
+                            <option value="<?= $paciente->getId(); ?>">
+                                <?= $paciente->getNombres() . " " . $paciente->getApellidos(); ?>
+                            </option>
+                        <?php } ?>
+                    </select>
+                </div>
+
                 <!-- Observaciones -->
                 <div class="mt-3">
                     <label class="form-label">Observaciones del Dermatólogo</label>
-                    <textarea name="observaciones" class="form-control" rows="2"></textarea>
+                    <textarea name="observaciones" class="form-control" rows="2" required></textarea>
                 </div>
 
                 <!-- Recomendaciones -->
                 <div class="mt-2">
                     <label class="form-label">Recomendaciones</label>
-                    <textarea name="recomendacion" class="form-control" rows="1"></textarea>
+                    <textarea name="recomendacion" class="form-control" rows="1" required></textarea>
                 </div>
 
                 <!-- Botón "Guardar Detección" -->

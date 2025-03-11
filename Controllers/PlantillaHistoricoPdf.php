@@ -96,51 +96,39 @@ class PlantillaHistoricoPdf
       $pdf->Output('Historia_Clinica.pdf', 'I');
   }
   
-    function generarHistoriaClinicaPDF2($reporte) {
-        // Cargar la librería TCPDF (asegúrate de haberla requerido antes)
-        // require_once('path/to/tcpdf.php'); // si no lo has hecho en otro lugar
-    
-        // Crea instancia TCPDF (formato A4, orientación vertical)
-        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
-    
-        // Configuraciones de documento
-        $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetAuthor('Hospital');
-        $pdf->SetTitle('Historia Clínica');
-        $pdf->SetHeaderMargin(15);
+  function generarHistoriaClinicaPDF2($reporte) {
+    $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
 
-        // Encabezado y pie de página (si no quieres un header automático, puedes quitarlo)
-        $pdf->SetHeaderData('', 0, 'CENTRO MEDICO DE LA PIEL', 'REPORTE HISTORIA CLINICA ');
-        $pdf->setHeaderFont([PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN]);
-        $pdf->setFooterFont([PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA]);
-        
-        // Márgenes y saltopáginas
-        $pdf->SetMargins(15, 27, 15);
-        $pdf->SetAutoPageBreak(true, 25);
-    
-        // Fuente por defecto
-        $pdf->SetFont('helvetica', '', 14);
-    
-        // Añade una página
-        $pdf->AddPage();
-    
-        // === LOGO ARRIBA A LA DERECHA ===
-        // Ajusta la ruta y las coordenadas (x=160, y=10, ancho=35mm)
-        // Si tu logo está en 'assets/logo.png', ajusta la ruta real:
-        $logoPath = __DIR__ . '/../assets/images/logo-captura.jpg';
-        if (!file_exists($logoPath)) {
-            die("No se encontró el logo en: $logoPath");
-        }
-        $pdf->Image($logoPath, 135, 6, 60);  // x=140, y=10, ancho=40 mm
+    // Configuraciones del documento
+    $pdf->SetCreator(PDF_CREATOR);
+    $pdf->SetAuthor('Hospital');
+    $pdf->SetTitle('Historia Clínica');
+    $pdf->SetHeaderMargin(15);
+    $pdf->SetHeaderData('', 0, 'CENTRO MEDICO DE LA PIEL', 'REPORTE HISTORIA CLINICA');
+    $pdf->setHeaderFont([PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN]);
+    $pdf->setFooterFont([PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA]);
+    $pdf->SetMargins(15, 27, 15);
+    $pdf->SetAutoPageBreak(true, 25);
+    $pdf->SetFont('helvetica', '', 14);
+    $pdf->AddPage();
 
-    
-        // Supongamos que tienes la función calcularEdad($fechaNac)
-        $nom_ap = $reporte[0]['nombres'] . ' ' . $reporte[0]['apellidos'];
-        $edad   = $this->calcularEdad($reporte[0]['fnacimiento']);
-    
-        // Armamos el HTML
-        $html = '
-        <style>
+    // Logo en la parte superior derecha
+    $logoPath = __DIR__ . '/../assets/images/logo-captura.jpg';
+    if (file_exists($logoPath)) {
+        $pdf->Image($logoPath, 135, 6, 60);
+    }
+
+    // Datos del paciente
+    $nom_ap = $reporte[0]['nombres'] . ' ' . $reporte[0]['apellidos'];
+    $edad   = $this->calcularEdad($reporte[0]['fnacimiento']);
+    $diagnostico = $reporte[0]['diagnostico'] ?? "----";
+    $recomendacion = $reporte[0]['recomendacion'] ?? "----";
+    $observaciones = $reporte[0]['observaciones'] ?? "----";
+    $imagen = $reporte[0]['imagen'] ?? ""; // Ruta de la imagen
+
+    // === ESTRUCTURA HTML ===
+    $html = '
+    <style>
           /* Estilos para tablas, secciones, etc. */
           h2, h3 {
             text-align: center;
@@ -169,52 +157,53 @@ class PlantillaHistoricoPdf
             font-size: 12pt;
           }
         </style>
-    
-        <h2>CENTRO MEDICO DE LA PIEL</h2>
-        <h3>REPORTE HISTORIA CLINICA INGRESO</h3>
-    
-        <!-- Tabla de datos de identificación -->
-        <div cellmargin="5" class="seccion">INFORMACION PACIENTE:</div>
-        <table border="1" cellpadding="3" cellspacing="5">
 
+    <h5></h5>
+    <h3>REPORTE HISTORIA CLINICA Nro.'. $reporte[0]['numero'] . '</h3>
+
+    <div cellmargin="5" class="seccion">INFORMACIÓN PACIENTE:</div>
+    <table border="1" cellpadding="3" cellspacing="5">
+      <tr><td><strong>Nombre:</strong> ' . $nom_ap . '</td><td><strong>Cédula:</strong> ' . $reporte[0]['cedula'] . '</td></tr>
+      <tr><td><strong>Edad:</strong> ' . $edad . ' años</td><td><strong>Sexo:</strong> ' . $reporte[0]['genero'] . '</td></tr>
+      <tr><td><strong>Ocupación:</strong> ' . $reporte[0]['ocupacion'] . '</td><td><strong>Estado Civil:</strong> ' . $reporte[0]['estcivil'] . '</td></tr>
+      <tr><td><strong>Dirección:</strong> ' . $reporte[0]['direccion'] . '</td><td><strong>Teléfono:</strong> ' . $reporte[0]['telefono'] . '</td></tr>
+      <tr><td colspan="2"><strong>Email:</strong> ' . $reporte[0]['email'] . '</td></tr>
+      <tr><td colspan="2"><strong>Número de Historia Clínica:</strong> ' . $reporte[0]['numero'] . '</td></tr>
+    </table>';
+
+    // === Diagnóstico con imagen si existe ===
+    if (!empty($imagen) && file_exists($imagen)) {
+        // Diagnóstico con imagen (dos columnas)
+        $html .= '
+        <div class="seccion" >DIAGNOSTICO:</div>
+        <table border="1" cellspacing="5">
           <tr>
-            <td ><strong>Nombre:</strong> ' . $nom_ap . '</td>
-            <td><strong>Cédula:</strong> ' . $reporte[0]['cedula'] . '</td>
+            <td style="width: 40%; text-align: center; border: 1px solid #000;">
+              <img src="' . $imagen . '" width="165" height="150" style="border: 1px solid #000;">
+            </td>
+            <td style="width: 60%; text-align: center; border: 1px solid #000; font-size: 14pt; font-weight: bold; padding: 20px;">
+              <strong>Resultado:</strong> <br>' . $diagnostico . '
+            </td>
           </tr>
+        </table>';
+    } else {
+        // Diagnóstico sin imagen (una sola celda centrada)
+        $html .= '
+        <div class="seccion">DIAGNOSTICO:</div>
+        <table cellpadding="3" >
           <tr>
-            <td><strong>Edad:</strong> ' . $edad . ' años</td>
-            <td><strong>Sexo:</strong> ' . $reporte[0]['genero'] . '</td>
+            <td class="diagnostico-container">' . $diagnostico . '</td>
           </tr>
-          <tr>
-            <td><strong>Ocupación:</strong> ' . $reporte[0]['ocupacion'] . '</td>
-            <td><strong>Estado Civil:</strong> ' . $reporte[0]['estcivil'] . '</td>
-          </tr>
-          <tr>
-            <td><strong>Dirección:</strong> ' . $reporte[0]['direccion'] . '</td>
-            <td><strong>Teléfono:</strong> ' . $reporte[0]['telefono'] . '</td>
-          </tr>
-          <tr>
-            <td colspan="2"><strong>Email:</strong> ' . $reporte[0]['email'] . '</td>
-          </tr>
-          <tr>
-            <td colspan="2"><strong>Número de Historia Clínica:</strong> ' . $reporte[0]['numero'] . '</td>
-          </tr>
-        </table>
-    
-        <!-- Sección Enfermedad Actual -->
-        <div class="seccion">ENFERMEDAD ACTUAL:</div>
-        <table>
-          <tr>
-            <!-- Ajusta el height o quita si no quieres forzar espacio -->
-            <td style="height: 100px;">' . $reporte[0]['diagnostico'] . '</td>
-          </tr>
-        </table>
-    
-        <!-- Observaciones del Dermatólogo (similar a la imagen que mostraste) -->
+        </table>';
+    }
+
+    // === Otras secciones ===
+    $html .= '
+    <!-- Observaciones del Dermatólogo (similar a la imagen que mostraste) -->
         <div class="seccion">OBSERVACIONES DEL DERMATÓLOGO</div>
         <table>
           <tr>
-            <td style="height: 80px;">Aquí podrías poner las observaciones si existen en tu $reporte</td>
+            <td style="height: 80px;">' . $reporte[0]['observaciones'] . '</td>
           </tr>
         </table>
     
@@ -224,21 +213,14 @@ class PlantillaHistoricoPdf
           <tr>
             <td style="height: 80px;">' . $reporte[0]['recomendacion'] . '</td>
           </tr>
-        </table>
-        ';
-    
-        // Escribir el HTML en el PDF
-        $pdf->writeHTML($html, true, false, true, false, '');
-    
-        // Generar el PDF en pantalla
-        $pdf->Output('Historia_Clinica.pdf', 'I');
-        exit();
-    }
-    
-    
-    
-    
+        </table>';
 
-    
+    // Escribir el HTML en el PDF
+    $pdf->writeHTML($html, true, false, true, false, '');
+
+    // Generar el PDF en pantalla
+    $pdf->Output('Historia_Clinica.pdf', 'I');
+    exit();
+}
 
 }
