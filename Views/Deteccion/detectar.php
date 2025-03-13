@@ -61,6 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
 <?php
     $bgColor = ($predictionText === "Melanoma") ? "var(--bs-red)" : "var(--bs-teal)";
     $textColor = "var(--bs-white)"; // Texto blanco para contraste
+    if($predictionText === ""){
+        $bgColor ="";
+        $textColor = "var(--bs-gray-dark)";
+    }
 ?>
 <?php if (isset($_SESSION['mensaje'])): ?>
   <div 
