@@ -165,7 +165,56 @@ class HistoClinica
 		}
 		return null; // Retorna null si no se encontró ningún registro
 	}
-
+	public static function findByMelanoma() {
+		$listaHistorias = [];
+		$db = Db::getConnect();
+		
+		// Consulta que filtra las historias con 'Melanoma' en el diagnóstico
+		$sql = $db->query("SELECT * FROM histoclinicas WHERE diagnostico LIKE '%Melanoma%' ORDER BY id");
+	
+		// Carga en la $listaHistorias cada registro que coincida con la búsqueda
+		foreach ($sql->fetchAll() as $historia) {
+			// Crear un objeto HistoClinica con todos los atributos de la base de datos
+			$listaHistorias[] = new HistoClinica(
+				$historia['id'],
+				$historia['fregistro'],
+				$historia['numero'],
+				$historia['motivo'],
+				$historia['diagnostico'],
+				$historia['observaciones'],
+				$historia['recomendacion'],
+				$historia['imagen'],
+				$historia['paciente']
+			);
+		}
+	
+		return $listaHistorias;
+	}
+	public static function findByNoMelanoma() {
+		$listaHistorias = [];
+		$db = Db::getConnect();
+		
+		// Consulta que filtra las historias donde el diagnóstico contiene 'No Melanoma'
+		$sql = $db->query("SELECT * FROM histoclinicas WHERE diagnostico NOT LIKE '%Melanoma%' ORDER BY id");
+	
+		// Carga en la $listaHistorias cada registro que coincida con la búsqueda
+		foreach ($sql->fetchAll() as $historia) {
+			// Crear un objeto HistoClinica con todos los atributos de la base de datos
+			$listaHistorias[] = new HistoClinica(
+				$historia['id'],
+				$historia['fregistro'],
+				$historia['numero'],
+				$historia['motivo'],
+				$historia['diagnostico'],
+				$historia['observaciones'],
+				$historia['recomendacion'],
+				$historia['imagen'],
+				$historia['paciente']
+			);
+		}
+	
+		return $listaHistorias;
+	}
 	//la función para obtener una HC por el numero
 	public static function getByNumero($numero){
 		$db = Db::getConnect();

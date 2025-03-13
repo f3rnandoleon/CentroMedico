@@ -84,7 +84,7 @@
           <div class="card-body">
             <i class="bi bi-eyeglasses fs-2 mb-2 text-success"></i>
             <h5>Melanomas Detectadas</h5>
-            <h2 class="text-success">55</h2>
+            <h2 class="text-success"><?php echo count($melanomas)?></h2>
           </div>
         </div>
       </div>
@@ -95,7 +95,7 @@
           <div class="card-body">
             <i class="bi bi-heart-pulse fs-2 mb-2 text-danger"></i>
             <h5>Otras Lesiones</h5>
-            <h2 class="text-danger">53</h2>
+            <h2 class="text-danger"><?php echo count($nomelanomas)?></h2>
           </div>
         </div>
       </div>

@@ -58,6 +58,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
     $errorMessage = "Por favor, seleccione una imagen antes de detectar.";
 }
 ?>
+<?php
+    $bgColor = ($predictionText === "Melanoma") ? "var(--bs-red)" : "var(--bs-teal)";
+    $textColor = "var(--bs-white)"; // Texto blanco para contraste
+?>
 <?php if (isset($_SESSION['mensaje'])): ?>
   <div 
     class="alert alert-success position-fixed top-20 start-50 translate-middle-x mt-3 shadow"
@@ -91,24 +95,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
                     <!-- Información del paciente y resultado -->
                     <div class="col-md-8">
                         <div class="row g-3">
-                            <!-- Resultado de la predicción -->
-                            <div class="col-sm-9">
-                                <label class="form-label">Resultado</label>
-                                <input type="text" class="form-control"
-                                       name="resultado"
-                                       value="<?= htmlspecialchars($predictionText) ?>"
-                                       readonly>
-                            </div>
-
-                            <!-- Probabilidad -->
-                            <div class="col-sm-3">
-                                <label class="form-label">Probabilidad</label>
-                                <input type="text" class="form-control"
-                                       name="probabilidad"
-                                       value="<?= htmlspecialchars($probabilityText) ?> %"
-                                       readonly>
-                            </div>
-
                             <!-- Subir imagen -->
                             <div class="mt-4 row g-3">
                                 <div class="col-md-8">
@@ -130,6 +116,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
                                     </div>
                                 <?php endif; $errorMessage=""; ?>
                             </div>
+                            <!-- Resultado de la predicción -->
+                            <div class="col-sm-9">
+                                <label class="form-label">Resultado</label>
+                                <input type="text" class="form-control"
+                                       name="resultado"
+                                       value="<?= htmlspecialchars($predictionText) ?>"
+                                       readonly
+                                       style="background-color: <?= $bgColor ?>; color: <?= $textColor ?>;">
+                            </div>
+
+                            <!-- Probabilidad -->
+                            <div class="col-sm-3">
+                                <label class="form-label">Probabilidad</label>
+                                <input type="text" class="form-control"
+                                       name="probabilidad"
+                                       value="<?= htmlspecialchars($probabilityText) ?> %"
+                                       readonly
+                                       style="background-color: <?= $bgColor ?>; color: <?= $textColor ?>;">
+                            </div>
+
+                            
                         </div>
                     </div>
                 </div>

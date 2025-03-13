@@ -77,9 +77,13 @@ class UsuarioController
 	public function welcome(){
 		$historias=HistoClinica::all();
 		$pacientes=Paciente::all();
+		$melanomas=HistoClinica::findByMelanoma();
+		$nomelanomas=HistoClinica::findByNoMelanoma();
 		require_once('Views/Deteccion/bienvenido.php');
 	} 
 	public function reportGeneral(){
+		$melanomas=HistoClinica::findByMelanoma();
+		$nomelanomas=HistoClinica::findByNoMelanoma();
 		require_once('Views/ReportGeneral/show.php');
 	} 
 

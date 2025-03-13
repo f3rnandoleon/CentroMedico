@@ -1,128 +1,111 @@
+<?php
+// Agrupar los melanomas por mes
+$melanomasPorMes = array_fill(0, 12, 0);
+$otrasLesiones = count($nomelanomas);
+
+foreach ($melanomas as $historia) {
+    $mes = date('n', strtotime($historia->getFregistro())) - 1;
+    $melanomasPorMes[$mes]++;
+}
+
+// Convertir los datos a JSON para usarlos en JavaScript
+$datosMelanomasJson = json_encode($melanomasPorMes);
+$datosPieJson = json_encode([count($melanomas), $otrasLesiones]);
+?>
+
 <style>
     body {
-      background-color: #f5f9fa; /* Fondo claro */
+        background-color: #f5f9fa;
     }
-    .stat-card {
-      border-radius: 10px;
-      border: none;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .stat-card h5 {
-      font-size: 1rem;
-      margin-bottom: 0.5rem;
-      color: #6c757d;
-    }
-    .stat-card h2 {
-      font-weight: 700;
-      margin: 0;
-    }
-    /* Para centrar ícono, título y número en la tarjeta */
-    .stat-card .card-body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    .chart-card {
-      border-radius: 10px;
-      border: none;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    .stat-card, .chart-card {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
     .chart-container {
-      position: relative;
-      height: 300px;
-      width: 100%;
+        position: relative;
+        height: 300px;
+        width: 100%;
     }
-  </style>
-<div class="container py-4" style="max-height: 85vh; overflow-y:auto;">
-    
+</style>
+
+<div class="container py-4"  style="max-height: 87vh; overflow-y:auto;">
     <h2 class="mb-4">Reporte General</h2>
 
-    <!-- Card con Gráfico de líneas -->
+    <div class="d-flex justify-content-end mb-3">
+        <label for="selectAnio" class="me-2">Seleccionar Año:</label>
+        <select class="form-select w-auto" id="selectAnio">
+            <option value="2023" selected>2023</option>
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+        </select>
+    </div>
+
+    <!-- Gráfico de Líneas -->
     <div class="card chart-card mb-4">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="m-0">Melanomas Detectadas el mes de 
-            <span id="mesSeleccionado">Octubre</span>
-          </h5>
-          
-          <!-- Select para cambiar mes -->
-          <select class="form-select w-auto" id="selectMes" onchange="cambiarMes()">
-            <option value="Octubre" selected>Octubre</option>
-            <option value="Noviembre">Noviembre</option>
-            <option value="Diciembre">Diciembre</option>
-          </select>
+        <div class="card-body">
+            <h5 class="mb-3">Melanomas Detectados</h5>
+            <div class="chart-container">
+                <canvas id="lineChart"></canvas>
+            </div>
         </div>
-        
-        <div class="chart-container">
-          <canvas id="lineChart"></canvas>
-        </div>
-      </div>
     </div>
-    
-    <!-- Card con Pie Chart -->
+
+    <!-- Gráfico de Pastel -->
     <div class="card chart-card">
-      <div class="card-body">
-        <h5 class="mb-3">Pie Chart</h5>
-        <div class="chart-container">
-          <canvas id="pieChart"></canvas>
+        <div class="card-body">
+            <h5 class="mb-3">Distribución de Casos</h5>
+            <div class="chart-container">
+                <canvas id="pieChart"></canvas>
+            </div>
         </div>
-      </div>
     </div>
-    
-  </div><!-- Fin container -->
+</div>
 
-  <!-- Si ya tienes bootstrap.bundle.min.js, no repitas -->
-  <!-- <script src="js/bootstrap.bundle.min.js"></script> -->
+<!-- Cargar Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- CDN de Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
-  <script>
-    function cambiarMes() {
-      const select = document.getElementById('selectMes');
-      document.getElementById('mesSeleccionado').textContent = select.value;
-      // Aquí podrías actualizar datos del gráfico en base al mes seleccionado
-    }
+<script>
+    // Datos pasados desde PHP
+    const datosMelanomas = <?php echo $datosMelanomasJson; ?>;
+    const datosPie = <?php echo $datosPieJson; ?>;
 
-    // Gráfico de líneas
+    // Inicializar gráfico de líneas
     const ctxLine = document.getElementById('lineChart').getContext('2d');
     const lineChart = new Chart(ctxLine, {
-      type: 'line',
-      data: {
-        labels: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31'],
-        datasets: [{
-          label: 'Melanomas',
-          data: [3,2,4,5,3,6,4,5,6,7,3,2,4,6,5,4,5,6,7,3,2,4,6,5,2,1,4,2,3,4,5],
-          borderColor: '#28a745',
-          backgroundColor: 'rgba(40,167,69,0.1)',
-          tension: 0.3,
-          fill: true,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: { beginAtZero: true }
+        type: 'line',
+        data: {
+            labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+            datasets: [{
+                label: 'Melanomas',
+                data: datosMelanomas,
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40,167,69,0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true } }
         }
-      }
     });
 
-    // Gráfico de pastel
+    // Inicializar gráfico de pastel
     const ctxPie = document.getElementById('pieChart').getContext('2d');
     const pieChart = new Chart(ctxPie, {
-      type: 'pie',
-      data: {
-        labels: ['Melanomas', 'Lesiones X', 'Lesiones Y', 'Otras'],
-        datasets: [{
-          data: [55, 30, 10, 5],
-          backgroundColor: ['#28a745', '#ffc107', '#17a2b8', '#dc3545']
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
+        type: 'pie',
+        data: {
+            labels: ['Melanomas', 'Otras Lesiones'],
+            datasets: [{
+                data: datosPie,
+                backgroundColor: ['#dc3545', '#198754']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
     });
-  </script>
+</script>
