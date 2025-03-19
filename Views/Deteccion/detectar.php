@@ -27,7 +27,7 @@ $errorMessage = "";
 $imagePath = "";
 $similarImages = [];
 $similarLabels = [];
-
+$diagnostic=["Melanoma","No Melanoma"];
 // Directorio donde se guardarán las imágenes
 $uploadDir = "uploads/";
 
@@ -215,14 +215,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
                     <div class="col-md-4 text-center">
                         <h6>Imagen Subida</h6>
                         <?php if (!empty($imagePath)): ?>
-                            <img src="<?= $imagePath ?>" alt="Imagen subida" class="img-fluid rounded" style="max-height: 250px;">
+                            <img src="<?= $imagePath ?>" alt="Imagen subida" class="img-fluid rounded" style="max-height: 215px;">
                         <?php else: ?>
                             <p class="text-muted">No hay imagen subida.</p>
                         <?php endif; ?>
                     </div>
 
                     <!-- Columna Central: Características (color, borde, textura) -->
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <h6>Características</h6>
                         
                                 <h6>Color</h6>
@@ -239,15 +239,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
                     </div>
 
                     <!-- Columna Derecha: Imágenes similares -->
-                    <div class="col-md-5">
+                    <div class="col-md-6">
                         <h6>Imágenes Similares</h6>
                         <?php if (!empty($similarImages)): ?>
-                            <div class="row">
-                                <?php foreach ($similarImages as $index => $similarImage): ?>
-                                    <div class="col-md-6 mb-3">
-                                        <img src="<?= $similarImage ?>" 
-                                             alt="Imagen similar" class="img-fluid border rounded">
-                                        <p class="text-center mt-2"><?= $similarLabels[$index] ?? 'Sin etiqueta' ?></p>
+                            <div class="d-flex flex-wrap gap-2"> <!-- Contenedor flexible para las imágenes -->
+                                <?php foreach ($similarImages as $index => $similarImage): 
+                                    $similarImagePath = explode("DermMel", $similarImage);
+                                    $path = "DermMel" . $similarImagePath[1]; ?>
+                                    <div class="flex-grow-1" style="max-width: 48%;"> <!-- Ajusta el ancho máximo -->
+                                        <img src="<?= $path ?>" 
+                                            alt="Imagen similar" 
+                                            class="img-fluid border rounded w-100 h-auto" 
+                                            style="max-height: 120px;"> <!-- Ajusta la altura máxima -->
+                                        <p class="text-center mt-2"><?= $diagnostic[$similarLabels[$index]] ?? 'Sin etiqueta' ?></p>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
