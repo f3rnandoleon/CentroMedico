@@ -28,7 +28,8 @@ class HistoriaController
 			$_POST['observaciones'],
             $_POST['recomendacion'], 
 			null,
-            $_POST['paciente']
+            $_POST['paciente'],
+			$_POST['usuario_id']
         );
 		HistoClinica::save($historia);
 		$_SESSION['mensaje']='Registro guardado satisfactoriamente';		

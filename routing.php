@@ -27,6 +27,7 @@
 				require_once('Models/HistoClinica.php');
 				require_once('Models/ExaVisual.php');
 				require_once('Models/Paciente.php');
+				require_once('Models/Usuario.php');
 				
 				$controller=new HistoriaController();
 				break; 

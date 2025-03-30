@@ -32,13 +32,7 @@ class Usuario
 		$this->id = $id;
 	}
 
-	public function getFecha(){
-		return $this->fecha;
-	}
 
-	public function setFecha($fecha){
-		$this->fecha = $fecha;
-	}
 
 	public function getNombres(){
 		return $this->nombres;
@@ -87,7 +81,13 @@ class Usuario
 	public function setRespuesta($respuesta){
 		$this->respuesta = $respuesta;
 	}
+	public function getFecha(){
+		return $this->fecha;
+	}
 
+	public function setFecha($fecha){
+		$this->fecha = $fecha;
+	}
 
 	//opciones CRUD
 
@@ -152,7 +152,7 @@ class Usuario
 		$select->execute();
 		//asignarlo al objeto usuario
 		$usuarioDb=$select->fetch();
-		$usuario= new Usuario($usuarioDb['id'],$usuarioDb['fecha'],$usuarioDb['nombres'],$usuarioDb['apellidos'],$usuarioDb['email'], $usuarioDb['clave'],$usuarioDb['pregunta'],$usuarioDb['respuesta']);
+		$usuario= new Usuario($usuarioDb['id'],$usuarioDb['nombres'],$usuarioDb['apellidos'],$usuarioDb['email'], $usuarioDb['clave'],$usuarioDb['pregunta'],$usuarioDb['respuesta'],$usuarioDb['fecha']);
 		//var_dump($usuario);
 		//die();
 		return $usuario;

@@ -28,9 +28,9 @@ class DeteccionController {
         
         $historia = new HistoClinica(
             null, $_POST['fecha'], $idHistoria, "Detección de Melanoma", 
-            $_POST['resultado'] . " " . $_POST['probabilidad'], 
+            $_POST['resultado'] , 
             $_POST['observaciones'], $_POST['recomendacion'], 
-            $imageUrl, $_POST['paciente']
+            $imageUrl, $_POST['paciente'], $_POST['usuario_id']
         );
     
         HistoClinica::save($historia);
