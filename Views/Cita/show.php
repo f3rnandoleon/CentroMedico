@@ -4,7 +4,8 @@ if(!isset($_SESSION)) {
 }
 
 // Recuperar el sort y dir actuales para mostrar iconos y conservar en paginación
-$current_sort = isset($_SESSION['sort']) ? $_SESSION['sort'] : 'cedula';
+// Por defecto, ordena por fecha (puedes cambiar según lo que necesites)
+$current_sort = isset($_SESSION['sort']) ? $_SESSION['sort'] : 'fecha';
 $current_dir  = isset($_SESSION['dir']) ? $_SESSION['dir'] : 'asc';
 
 // Función para invertir la dirección
@@ -13,14 +14,13 @@ function invertDir($dir) {
 }
 ?>
 
-<div class="container text-center px-4 py-3" style="max-height: 85vh; overflow-y:auto;"><!-- Espaciado vertical superior e inferior -->
-
-  <h1 class="text-success mb-3">Lista de Pacientes</h1>
+<div class="container text-center px-4 py-3" style="max-height: 85vh; overflow-y:auto;">
+  <h1 class="text-success mb-3">Lista de Citas</h1>
 
   <!-- Formulario de búsqueda -->
-  <form class="row g-3 mb-3" action="?controller=paciente&action=buscar" method="post">
+  <form class="row g-3 mb-3" action="?controller=cita&action=buscar" method="post">
     <div class="col-auto">
-      <input class="form-control" id="search" name="search" type="text" placeholder="1717899322">
+      <input class="form-control" id="search" name="searchTerm" type="text" placeholder="Buscar por fecha, motivo o paciente">
     </div>
     <div class="col-auto">
       <button type="submit" class="btn btn-success">
@@ -41,84 +41,79 @@ function invertDir($dir) {
     <table class="table table-hover align-middle">
       <thead class="table-success">
         <tr>
-          <!-- Cédula -->
+          <!-- Fecha -->
           <th>
-            <a href="?controller=paciente&action=show&sort=cedula&dir=<?php echo ($current_sort === 'cedula') ? invertDir($current_dir) : 'asc'; ?>" 
+            <a href="?controller=cita&action=show&sort=fecha&dir=<?php echo ($current_sort === 'fecha') ? invertDir($current_dir) : 'asc'; ?>" 
                class="text-dark text-decoration-none">
-              Cédula
-              <?php if($current_sort === 'cedula'): ?>
+              Fecha
+              <?php if($current_sort === 'fecha'): ?>
                 <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
               <?php endif; ?>
             </a>
           </th>
-          <!-- Nombres -->
+          <!-- Hora -->
           <th>
-            <a href="?controller=paciente&action=show&sort=nombres&dir=<?php echo ($current_sort === 'nombres') ? invertDir($current_dir) : 'asc'; ?>"
+            <a href="?controller=cita&action=show&sort=hora&dir=<?php echo ($current_sort === 'hora') ? invertDir($current_dir) : 'asc'; ?>" 
                class="text-dark text-decoration-none">
-              Nombres
-              <?php if($current_sort === 'nombres'): ?>
+              Hora
+              <?php if($current_sort === 'hora'): ?>
                 <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
               <?php endif; ?>
             </a>
           </th>
-          <!-- Apellidos -->
+          <!-- Paciente -->
           <th>
-            <a href="?controller=paciente&action=show&sort=apellidos&dir=<?php echo ($current_sort === 'apellidos') ? invertDir($current_dir) : 'asc'; ?>"
+            <a href="?controller=cita&action=show&sort=paciente&dir=<?php echo ($current_sort === 'paciente') ? invertDir($current_dir) : 'asc'; ?>" 
                class="text-dark text-decoration-none">
-              Apellidos
-              <?php if($current_sort === 'apellidos'): ?>
+              Paciente
+              <?php if($current_sort === 'paciente'): ?>
                 <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
               <?php endif; ?>
             </a>
           </th>
-          <!-- Ocupación -->
+          <!-- Motivo -->
           <th>
-            <a href="?controller=paciente&action=show&sort=ocupacion&dir=<?php echo ($current_sort === 'ocupacion') ? invertDir($current_dir) : 'asc'; ?>"
+            <a href="?controller=cita&action=show&sort=motivo&dir=<?php echo ($current_sort === 'motivo') ? invertDir($current_dir) : 'asc'; ?>" 
                class="text-dark text-decoration-none">
-              Ocupación
-              <?php if($current_sort === 'ocupacion'): ?>
+              Motivo
+              <?php if($current_sort === 'motivo'): ?>
                 <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
               <?php endif; ?>
             </a>
           </th>
-          <!-- Email -->
+          <!-- Estado -->
           <th>
-            <a href="?controller=paciente&action=show&sort=email&dir=<?php echo ($current_sort === 'email') ? invertDir($current_dir) : 'asc'; ?>"
+            <a href="?controller=cita&action=show&sort=estado&dir=<?php echo ($current_sort === 'estado') ? invertDir($current_dir) : 'asc'; ?>" 
                class="text-dark text-decoration-none">
-              Email
-              <?php if($current_sort === 'email'): ?>
-                <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
-              <?php endif; ?>
-            </a>
-          </th>
-          <!-- Teléfono -->
-          <th>
-            <a href="?controller=paciente&action=show&sort=telefono&dir=<?php echo ($current_sort === 'telefono') ? invertDir($current_dir) : 'asc'; ?>"
-               class="text-dark text-decoration-none">
-              Teléfono
-              <?php if($current_sort === 'telefono'): ?>
+              Estado
+              <?php if($current_sort === 'estado'): ?>
                 <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
               <?php endif; ?>
             </a>
           </th>
           <!-- Acciones -->
-          <th colspan="3" class="text-center">Acciones</th>
+          <th colspan="2" class="text-center">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <?php foreach ($lista_pacientes as $paciente) { ?>
+        <?php 
+          // Se asume que $lista_citas contiene un arreglo de objetos Cita.
+          foreach ($lista_citas as $cita) { 
+            // Recuperar datos del paciente asociado para mostrar nombre y apellido
+            $paciente = Paciente::getById($cita->getPaciente());
+            $nombrePaciente = $paciente ? $paciente->getNombres() . " " . $paciente->getApellidos() : "Desconocido";
+        ?>
           <tr>
-            <td><?php echo $paciente->getCedula(); ?></td>
-            <td><?php echo $paciente->getNombres(); ?></td>
-            <td><?php echo $paciente->getApellidos(); ?></td>
-            <td><?php echo $paciente->getOcupacion(); ?></td>
-            <td><?php echo $paciente->getEmail(); ?></td>
-            <td><?php echo $paciente->getTelefono(); ?></td>
+            <td><?php echo $cita->getFecha(); ?></td>
+            <td><?php echo $cita->getHora(); ?></td>
+            <td><?php echo $nombrePaciente; ?></td>
+            <td><?php echo $cita->getMotivo(); ?></td>
+            <td><?php echo ucfirst($cita->getEstado()); ?></td>
             
             <!-- Botón Actualizar -->
             <td>
               <button type="button" class="btn btn-warning"
-                      onclick="location.href='?controller=paciente&action=showupdate&id=<?php echo $paciente->getId()?>'">
+                      onclick="location.href='?controller=cita&action=showupdate&id=<?php echo $cita->getId()?>'">
                 <i class="bi bi-pencil"></i> Actualizar
               </button>
             </td>
@@ -126,7 +121,7 @@ function invertDir($dir) {
             <!-- Botón Eliminar -->
             <td>
               <button type="button" class="btn btn-danger"
-                      onclick="location.href='?controller=paciente&action=delete&id=<?php echo $paciente->getId()?>'">
+                      onclick="location.href='?controller=cita&action=delete&id=<?php echo $cita->getId()?>'">
                 <i class="bi bi-trash"></i> Eliminar
               </button>
             </td>
@@ -141,8 +136,7 @@ function invertDir($dir) {
     <ul class="pagination">
       <?php for ($i = 1; $i <= $botones; $i++) { ?>
         <li class="page-item <?php echo (isset($_GET['boton']) && $_GET['boton'] == $i) ? 'active' : ''; ?>">
-          <!-- Conservar sort y dir en la paginación para no perder el orden actual -->
-          <a class="page-link" href="?controller=paciente&action=show&boton=<?php echo $i; ?>&sort=<?php echo $current_sort; ?>&dir=<?php echo $current_dir; ?>">
+          <a class="page-link" href="?controller=cita&action=show&boton=<?php echo $i; ?>&sort=<?php echo $current_sort; ?>&dir=<?php echo $current_dir; ?>">
             <?php echo $i; ?>
           </a>
         </li>

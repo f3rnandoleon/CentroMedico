@@ -97,7 +97,13 @@ class Cita
         $insert->bindValue('observaciones', $cita->getObservaciones());
         $insert->execute();
     }
-
+    public static function delete($id) {
+        $db = Db::getConnect();
+        $delete = $db->prepare("DELETE FROM citas WHERE id = :id");
+        $delete->bindValue('id', $id);
+        $delete->execute();
+    }
+    
     // Actualiza una cita existente (no se modifica la fecha de creación)
     public static function update($cita) {
         $db = Db::getConnect();

@@ -32,6 +32,26 @@ class CitaController
         $_SESSION['mensaje'] = 'Registro guardado satisfactoriamente';
         $this->show();
     }
+    public function delete() {
+        // Obtener el id de la cita desde la URL
+        $id = $_GET['id'];
+        
+        // Llamar al método delete del modelo
+        Cita::delete($id);
+        
+        // Mensaje de sesión indicando que se eliminó correctamente
+        $_SESSION['mensaje'] = 'Registro eliminado satisfactoriamente';
+        
+        // Redirigir a la lista de citas
+        $this->show();
+    }
+    public function showupdate(){
+		$id=$_GET['id'];
+		$cita=Cita::getBy($id);
+		require_once('Views/Cita/update.php');
+		//Usuario::update($usuario);
+		//header('Location: ../index.php');
+	}
 
     public function update() {
         // Se asume que el formulario envía los campos: id, paciente, fecha, hora, motivo, estado y observaciones.

@@ -13,12 +13,22 @@
       <!-- La acción apunta al controlador de citas y a la acción save -->
       <form action='?controller=cita&action=save' method='post' id="eventForm">
         
-        <!-- Paciente (ID) -->
+        <!-- Paciente  -->
         <div class="mb-3 row">
           <label for="paciente" class="col-sm-2 col-form-label">Paciente:</label>
           <div class="col-sm-10">
-            <input type="number" class="form-control" id="paciente" name="paciente"
-                   placeholder="Ingrese el ID del paciente" required autocomplete="off">
+          <select name="paciente" class="form-select" required>
+              <option value="">Seleccione un paciente</option>
+              <?php 
+              $pacientes = Paciente::all();
+              foreach ($pacientes as $paciente) { ?>
+                <option value="<?= $paciente->getId(); ?>"
+                >
+                  <?= $paciente->getNombres() . " " . $paciente->getApellidos(); ?>
+                </option>
+              <?php } ?>
+            </select>
+
           </div>
         </div>
         

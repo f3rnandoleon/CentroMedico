@@ -68,7 +68,7 @@
 						'historia'=>['register','save', 'show', 'showupdate','update', 'delete','reporteHistorico','reporte','buscar'],
 						'consulta'=>['register','save','show', 'showupdate','update','recetaPdf','buscar'],
 						'deteccion'=>['detectar','save'],
-						'cita'=>['register','save','show','update','error','buscar']
+						'cita'=>['register','save','show','update','showupdate','error','buscar','delete']
 						);
 						if ($controller == 'historia' && $action == 'reporte') {
 							require_once('./Controllers/generar_reporte.php');
