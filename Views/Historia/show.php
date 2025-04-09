@@ -19,6 +19,10 @@ function invertDir($dir) {
       border: 2px solid #000;
       border-radius: 8px;
     }
+    thead th {
+  vertical-align: middle; /* Centra verticalmente el contenido */
+  text-align: center; /* Asegura que el texto esté centrado horizontalmente */
+}
 </style>
 <div class="container  mt-3 px-3" style="max-height: 84vh; overflow-y:auto;">
   <!-- Título en verde -->
@@ -49,7 +53,7 @@ function invertDir($dir) {
       <table class="table table-hover align-middle">
         <!-- Encabezado con fondo verde claro -->
         <thead class="table-success">
-          <tr>
+          <tr class="py-4">
             <th>
               <a class="text-dark text-decoration-none" href="?controller=historia&action=show&sort=numero&dir=<?php echo ($current_sort === 'numero') ? invertDir($current_dir) : 'asc'; ?>">
                 N. Historia 
@@ -75,14 +79,14 @@ function invertDir($dir) {
                 <?php endif; ?>
               </a>
             </th>  
-            <th >Atendido por </th>
-            <th >Diagnostico </th>
+            <th class="text-center flex align-center">Atendido por </th>
+            <th class="text-center" >Diagnostico </th>
 
-            <th class="text-center">
+            <th class="text-center pb-2">
                 Imagen           
             </th>
 
-            <th class="text-center">Acciones</th>
+            <th class="text-center pb-2">Acciones</th>
           </tr>
         </thead>
         <tbody>

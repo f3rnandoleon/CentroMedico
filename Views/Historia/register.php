@@ -18,6 +18,7 @@ if (!isset($_SESSION)) {
     <!-- Cuerpo del card -->
     <div class="card-body">
       <form action='?controller=historia&action=save' method='post'>
+      <input type="hidden" name="usuario_id" value="<?= $_SESSION['usuario_id'] ?>">
         
         <!-- Fecha de Registro (auto) -->
         <div class="mb-3 row">
@@ -43,7 +44,7 @@ if (!isset($_SESSION)) {
               <option value="">Seleccione</option>
               <?php foreach ($pacientes as $paciente) { ?>
                 <option value="<?php echo $paciente->getId(); ?>">
-                  <?php echo $paciente->getNombres(); ?>
+                  <?php echo $paciente->getNombres()," ",$paciente->getApellidos(); ?>
                 </option>
               <?php } ?>
             </select>

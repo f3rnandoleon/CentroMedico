@@ -48,6 +48,13 @@
 				require_once('Models/Paciente.php');
 				$controller = new DeteccionController();
 				break;
+			case 'cita':  // Nuevo controlador
+				 // Carga el modelo si es necesario
+				 require_once('Models/Usuario.php');
+				 require_once('Models/Paciente.php'); // Para obtener datos de pacientes si se requieren en la vista
+				 require_once('Models/Cita.php'); // Modelo de la cita
+				$controller = new CitaController();
+				break;				
 		}
 		//llama a la acción del controlador
 		$controller->{$action }();
@@ -56,11 +63,12 @@
 
 	//array con los controladores y sus respectivas acciones
 	$controllers= array(
-						'usuario'=>['show','register','save','showregister', 'update', 'delete', 'showLogin','login','logout','error', 'welcome','reportGeneral','validarCedula'],
+						'usuario'=>['show','showAdmin','register','registerAdmin','save','saveAdmin','showregister', 'update','updateAdmin','showupdateAdmin', 'delete', 'showLogin','login','logout','error', 'welcome','reportGeneral','validarCedula','buscar'],
 						'paciente'=>['register','save', 'show', 'showupdate','update', 'delete','buscar'],
 						'historia'=>['register','save', 'show', 'showupdate','update', 'delete','reporteHistorico','reporte','buscar'],
 						'consulta'=>['register','save','show', 'showupdate','update','recetaPdf','buscar'],
-						'deteccion'=>['detectar','save']
+						'deteccion'=>['detectar','save'],
+						'cita'=>['register','save','show','update','error','buscar']
 						);
 						if ($controller == 'historia' && $action == 'reporte') {
 							require_once('./Controllers/generar_reporte.php');

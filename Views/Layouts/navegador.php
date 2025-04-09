@@ -32,6 +32,37 @@ if (!isset($_SESSION)) {
                  
               </a>       
       </li>
+      <?php if ($_SESSION['usuario_rol']=="Admin") { ?>
+        <!-- Citas -->
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex justify-content-between align-items-center"
+            data-bs-toggle="collapse"
+            href="#menuCitas"
+            role="button"
+            aria-expanded="false"
+            aria-controls="menuCitas">
+            <span><i class="bi bi-people"></i> Citas</span>
+            <i class="bi bi-chevron-down rotate-on-collapse"></i>
+          </a>
+          <div class="collapse" id="menuCitas" data-bs-parent="#sidebarMenu">
+            <ul class="list-unstyled ps-4">
+              <li>
+                <a href="?controller=cita&action=register" 
+                  class="text-white text-decoration-none d-block py-1">
+                  Agendar Cita
+                </a>
+              </li>
+              <li>
+                <a href="?controller=cita&action=show" 
+                  class="text-white text-decoration-none d-block py-1">
+                  Ver Citas
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+      <?php } ?>
+
       <!-- Pacientes -->
       <li class="nav-item">
         <a class="nav-link text-white d-flex justify-content-between align-items-center"
@@ -90,6 +121,7 @@ if (!isset($_SESSION)) {
         </div>
       </li>
 
+      <?php if ($_SESSION['usuario_rol']=="Dermatologo") { ?>
       <!-- Detección -->
       <li class="nav-item">
         <a class="nav-link text-white d-flex justify-content-between align-items-center"
@@ -112,6 +144,37 @@ if (!isset($_SESSION)) {
           </ul>
         </div>
       </li>
+      <?php } ?>
+      <?php if ($_SESSION['usuario_rol']=="Admin") { ?>
+        <!-- usuarios -->
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex justify-content-between align-items-center"
+            data-bs-toggle="collapse"
+            href="#menuUsuarios"
+            role="button"
+            aria-expanded="false"
+            aria-controls="menuUsuarios">
+            <span><i class="bi bi-people"></i> Usuarios</span>
+            <i class="bi bi-chevron-down rotate-on-collapse"></i>
+          </a>
+          <div class="collapse" id="menuUsuarios" data-bs-parent="#sidebarMenu">
+            <ul class="list-unstyled ps-4">
+              <li>
+                <a href="?controller=usuario&action=registerAdmin" 
+                  class="text-white text-decoration-none d-block py-1">
+                  Registrar Usuario
+                </a>
+              </li>
+              <li>
+                <a href="?controller=usuario&action=showAdmin" 
+                  class="text-white text-decoration-none d-block py-1">
+                  Ver Usuarios
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+      <?php } ?>
       <!-- Reportes -->
 
       <li class="nav-item">

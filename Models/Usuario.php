@@ -7,19 +7,17 @@ class Usuario
 	private $apellidos;
 	private $email;
 	private $clave;
-	private $pregunta;
-	private $respuesta;
+	private $rol;
 	private $fecha;
 
-	function __construct($id, $nombres, $apellidos, $email,$clave, $pregunta, $respuesta,$fecha)
+	function __construct($id, $nombres, $apellidos, $email,$clave, $rol,$fecha)
 	{
 		$this->setId($id);
 		$this->setNombres($nombres);
 		$this->setApellidos($apellidos);
 		$this->setEmail($email);
 		$this->setClave($clave);
-		$this->setPregunta($pregunta);
-		$this->setRespuesta($respuesta);
+		$this->setRol($rol);
 		$this->setFecha($fecha);
 	}
 
@@ -66,20 +64,12 @@ class Usuario
 		$this->clave = $clave;
 	}
 
-	public function getPregunta(){
-		return $this->pregunta;
+	public function getRol(){
+		return $this->rol;
 	}
 
-	public function setPregunta($pregunta){
-		$this->pregunta = $pregunta;
-	}
-
-	public function getRespuesta(){
-		return $this->respuesta;
-	}
-
-	public function setRespuesta($respuesta){
-		$this->respuesta = $respuesta;
+	public function setRol($rol){
+		$this->rol = $rol;
 	}
 	public function getFecha(){
 		return $this->fecha;
@@ -95,11 +85,11 @@ class Usuario
 	public static function all(){
 		$listaUsuarios =[];
 		$db=Db::getConnect();
-		$sql=$db->query('SELECT * FROM usuarios');
+		$sql=$db->query('SELECT * FROM usuarios ');
 
 		// carga en la $listaUsuarios cada registro desde la base de datos
 		foreach ($sql->fetchAll() as $usuario) {
-			$listaUsuarios[]= new Usuario($usuario['id'], $usuario['nombres'],$usuario['apellidos'],$usuario['email'], $usuario['clave'], $usuario['respuesta'], $usuario['pregunta'],$usuario['fecha']);
+			$listaUsuarios[]= new Usuario($usuario['id'], $usuario['nombres'],$usuario['apellidos'],$usuario['email'], $usuario['clave'], $usuario['rol'],$usuario['fecha']);
 		}
 		return $listaUsuarios;
 	}
@@ -108,8 +98,8 @@ class Usuario
 	public static function save($usuario){
 		$db=Db::getConnect();
 			
-		$insert = $db->prepare('INSERT INTO USUARIOS (id, nombres, apellidos, email, clave, pregunta, respuesta, fecha)
-        VALUES (NULL, :nombres, :apellidos, :email, :clave, :pregunta, :respuesta, :fecha)
+		$insert = $db->prepare('INSERT INTO USUARIOS (id, nombres, apellidos, email, clave, rol, fecha)
+        VALUES (NULL, :nombres, :apellidos, :email, :clave, :rol, :fecha)
     ');
 
 		$insert->bindValue('nombres',$usuario->getNombres());
@@ -120,8 +110,7 @@ class Usuario
 		//var_dump($pass);
 		//die();
 		$insert->bindValue('clave',$pass);
-		$insert->bindValue('pregunta',$usuario->getPregunta());
-		$insert->bindValue('respuesta',$usuario->getRespuesta());
+		$insert->bindValue('rol',$usuario->getRol());
 		$insert->bindValue('fecha',$usuario->getFecha());
 		$insert->execute();
 	}
@@ -134,6 +123,32 @@ class Usuario
 		$update->bindValue('nombres',$usuario->nombres);
 		$update->execute();
 	}
+	public static function updatesinclave($usuario) {
+		$db = Db::getConnect();
+	
+		// Preparamos la consulta SQL para actualizar los campos de la tabla usuarios
+		$update = $db->prepare('
+			UPDATE usuarios SET
+				nombres = :nombres,
+				apellidos = :apellidos,
+				email = :email,
+				rol = :rol,
+				fecha = :fecha
+			WHERE id = :id
+		');
+	
+		// Asociamos los parámetros con los valores del objeto Usuario
+		$update->bindValue('id',       $usuario->getId());
+		$update->bindValue('nombres',  $usuario->getNombres());
+		$update->bindValue('apellidos',$usuario->getApellidos());
+		$update->bindValue('email',    $usuario->getEmail());
+		$update->bindValue('rol',      $usuario->getRol());
+		$update->bindValue('fecha',    $usuario->getFecha());
+	
+		// Ejecutamos la consulta
+		$update->execute();
+	}
+	
 
 	// la función para eliminar por el id
 	public static function delete($id){
@@ -152,9 +167,44 @@ class Usuario
 		$select->execute();
 		//asignarlo al objeto usuario
 		$usuarioDb=$select->fetch();
-		$usuario= new Usuario($usuarioDb['id'],$usuarioDb['nombres'],$usuarioDb['apellidos'],$usuarioDb['email'], $usuarioDb['clave'],$usuarioDb['pregunta'],$usuarioDb['respuesta'],$usuarioDb['fecha']);
+		$usuario= new Usuario($usuarioDb['id'],$usuarioDb['nombres'],$usuarioDb['apellidos'],$usuarioDb['email'], $usuarioDb['clave'],$usuarioDb['rol'],$usuarioDb['fecha']);
 		//var_dump($usuario);
 		//die();
 		return $usuario;
 	}
+	public static function search($searchTerm) {
+		$db = Db::getConnect();  // Suponiendo que tienes un método Db::getConnect() para obtener la conexión
+	
+		// Prepara la consulta con varios campos para filtrar
+		$sql = "SELECT * FROM usuarios 
+				WHERE nombres   LIKE :searchTerm 
+				   OR apellidos LIKE :searchTerm 
+				   OR email     LIKE :searchTerm
+				   OR rol       LIKE :searchTerm";
+	
+		// Ejecutar la consulta
+		$query = $db->prepare($sql);
+		$query->bindValue(':searchTerm', '%' . $searchTerm . '%');
+		$query->execute();
+	
+		// Arreglo para los resultados
+		$usuarios = [];
+		
+		// Crear objetos Usuario por cada fila
+		while ($row = $query->fetch()) {
+			$usuarios[] = new Usuario(
+				$row['id'],
+				$row['nombres'],
+				$row['apellidos'],
+				$row['email'],
+				$row['clave'],
+				$row['rol'],
+				$row['fecha']
+			);
+		}
+	
+		return $usuarios;
+	}
+	
+	
 }
