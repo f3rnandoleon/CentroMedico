@@ -35,8 +35,7 @@ $datosPieJson = json_encode([count($melanomas), $otrasLesiones]);
     <div class="d-flex justify-content-end mb-3">
         <label for="selectAnio" class="me-2">Seleccionar Año:</label>
         <select class="form-select w-auto" id="selectAnio">
-            <option value="2023" selected>2023</option>
-            <option value="2024">2024</option>
+
             <option value="2025">2025</option>
         </select>
     </div>

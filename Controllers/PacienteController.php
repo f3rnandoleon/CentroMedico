@@ -20,7 +20,23 @@ class PacienteController
 		$this->show();
 		//header('Location: index.php');
 	}
+	public function update(){
+		$paciente= new Paciente($_POST['id'],$_POST['cedula'], $_POST['nombres'], $_POST['apellidos'], $_POST['ocupacion'], $_POST['estcivil'], $_POST['genero'],$_POST['date'],$_POST['email'],$_POST['direccion'], $_POST['telefono']);
 
+		//var_dump($paciente);
+		//die();
+		Paciente::update($paciente);
+		$_SESSION['mensaje']='Registro actualizado satisfactoriamente';
+		$this->show();
+		//header('Location: index.php');
+	}
+
+	public function delete(){
+		Paciente::delete($_GET['id']);
+		$_SESSION['mensaje']='Registro eliminado satisfactoriamente';
+		$this->show();
+		//header('Location: index.php');
+	}
 	//muestra los pacientes por usuario
 	public function show() {
 		$pacientes = Paciente::all();
@@ -120,23 +136,7 @@ class PacienteController
 		//header('Location: ../index.php');
 	}
 
-	public function update(){
-		$paciente= new Paciente($_POST['id'],$_POST['cedula'], $_POST['nombres'], $_POST['apellidos'], $_POST['ocupacion'], $_POST['estcivil'], $_POST['genero'],$_POST['date'],$_POST['email'],$_POST['direccion'], $_POST['telefono']);
-
-		//var_dump($paciente);
-		//die();
-		Paciente::update($paciente);
-		$_SESSION['mensaje']='Registro actualizado satisfactoriamente';
-		$this->show();
-		//header('Location: index.php');
-	}
-
-	public function delete(){
-		Paciente::delete($_GET['id']);
-		$_SESSION['mensaje']='Registro eliminado satisfactoriamente';
-		$this->show();
-		//header('Location: index.php');
-	}
+	
 	//muestra un paciente por cedula
 		public function buscar() {
 		// Si el campo de búsqueda no está vacío
@@ -153,5 +153,32 @@ class PacienteController
 			$this->show();
 		}
 	}
+	public function uploadImage() {
+
+  $id = $_POST['id'];
+  $uploadDir = __DIR__ . '/../public/directorio/' . intval($id);
+
+  // Crear carpeta si no existe
+  if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0777, true);
+  }
+
+  if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+    $tmpName = $_FILES['image']['tmp_name'];
+    $originalName = basename($_FILES['image']['name']);
+    $targetPath = $uploadDir . '/' . $originalName;
+
+    if (move_uploaded_file($tmpName, $targetPath)) {
+      $_SESSION['mensaje'] = "Imagen subida correctamente.";
+    } else {
+      $_SESSION['mensaje'] = "Error al mover la imagen.";
+    }
+  } else {
+    $_SESSION['mensaje'] = "Error en la subida de la imagen.";
+  }
+
+  $this->show();
+}
+
 	
 }

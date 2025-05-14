@@ -8,7 +8,7 @@ if (!isset($_SESSION)) {
 <aside class="d-flex flex-column flex-shrink-0 text-white"
        style="width: 250px; min-height: 100vh; background-color: #28a688;"
        id="sidebarMenu">
-
+  
   <!-- Sección superior: ícono y nombre de usuario -->
   <div class="p-3 text-center border-bottom border-light">
     <div class="mb-2">
@@ -20,7 +20,7 @@ if (!isset($_SESSION)) {
                  : 'Invitado'; ?>
     </h5>
   </div>
-
+  
   <!-- Menú vertical -->
   <ul class="nav nav-pills flex-column mb-auto mt-3 px-3 fs-6">
     <?php if (isset($_SESSION['usuario'])) { ?>

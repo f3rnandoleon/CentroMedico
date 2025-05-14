@@ -17,7 +17,7 @@
       <!-- Columna Izquierda: Imagen a pantalla completa -->
       <div class="col-md-6 d-none d-md-block p-0" 
            style="
-             background: url('assets/images/logo-login.jpg') center/cover no-repeat;
+             background: url('assets/images/banerLogiin.jpg') center/cover no-repeat;
              border-radius: 20px 0 0 20px;
              min-height: 100%;
            ">
@@ -31,6 +31,8 @@
         <!-- Contenedor interno con padding -->
         <div class="p-4" style="width: 100%; max-width: 400px;">
           <h3 class="text-center text-success mb-3">Bienvenido</h3>
+           
+          
           <p>Ingrese sus Credenciales</p>
           
           <!-- Formulario -->

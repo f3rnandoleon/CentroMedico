@@ -21,7 +21,7 @@ $errorMessage = "";
 $imagePath = "";
 $similarImages = [];
 $similarLabels = [];
-$diagnostic = ["La Imagen es MELANOMA con un porcentaje de ", "La Imagen es NO MELANOMA con cun porcentaje de "];
+$diagnostic = ["La Imagen es MELANOMA con un porcentaje de ", "La Imagen es NO MELANOMA con un porcentaje de "];
 $uploadDir = "uploads/";
 // Variables para almacenar los porcentajes de las características
 $colorScore = "N/A";
@@ -185,77 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
       <h5 class="mb-0">Datos previos del informe médico</h5>
     </div>
     <div class="card-body custom-card-body">
-      <!-- FORMULARIO PARA DETECTAR -->
-      <form action="" method="POST" enctype="multipart/form-data" class="custom-search-form">
-        <div class="row">
-          <!-- Imagen de la lesión -->
-          <div class="col-md-5 d-flex align-items-center justify-content-center mb-3">
-            <?php if (!empty($imagePath)): ?>
-              <img src="<?= $imagePath ?>" alt="Imagen cargada" class="img-fluid border" style="height: 350px; width:400px">
-            <?php else: ?>
-              <div class="border rounded d-flex align-items-center justify-content-center" style="height: 300px; width:350px">
-                <span class="text-muted">Sin imagen</span>
-              </div>
-            <?php endif; ?>
-          </div>
-          <!-- Información del resultado -->
-          <div class="col-md-7">
-            <div class="row g-3">
-              <div class="mt-2 row g-3">
-                <div>
-                  <label for="imageUpload" class="form-label">Subir imagen de la lesión</label>
-                  <input class="form-control" type="file" id="imageUpload" name="image" accept="image/*">
-                </div>
-                <div class="d-flex align-items-end">
-                  <button class="btn btn-primary w-100" type="submit" name="action" value="detect">
-                    Cargar y Detectar Lesión
-                  </button>
-                </div>
-                <?php if (!empty($errorMessage)): ?>
-                  <div class="alert alert-danger mt-3">
-                    <?= htmlspecialchars($errorMessage); ?>
-                  </div>
-                <?php endif; $errorMessage=""; ?>
-              </div>
-              <div class="row mt-1">
-                <div class="mb-2">
-                  <label class="form-label">Resultado</label>
-                  <input type="text" class="form-control" name="resultado"
-                         value="<?php echo $diagnostico, htmlspecialchars($probabilityText), "%" ?>"
-                         readonly style="background-color: <?= $bgColor ?>; color: <?= $textColor ?>;">
-                </div>
-                <!-- Mostrar los porcentajes de las características en cada input -->
-                <div class="col-md-6 mb-2">
-                  <label class="form-label">Color</label>
-                  <input type="text" class="form-control" name="color" value="<?php echo htmlspecialchars($colorScore); ?>" readonly>
-                </div>
-                <div class="col-md-6 mb-2">
-                  <label class="form-label">Borde</label>
-                  <input type="text" class="form-control" name="borde" value="<?php echo htmlspecialchars($bordeScore); ?>" readonly>
-                </div>
-                <div class="col-md-6 mb-2">
-                  <label class="form-label">Asimetría</label>
-                  <input type="text" class="form-control" name="asimetria" value="<?php echo htmlspecialchars($asimetriaScore); ?>" readonly>
-                </div>
-                <div class="col-md-6 mb-2">
-                  <label class="form-label">Textura</label>
-                  <input type="text" class="form-control" name="textura" value="<?php echo htmlspecialchars($texturaScore); ?>" readonly>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </form>
-
-      <!-- FORMULARIO PARA GUARDAR -->
-      <form action="?controller=deteccion&action=save" method="POST">
-        <input type="hidden" name="fecha" value="<?= date('Y-m-d'); ?>">
-        <input type="hidden" name="resultado" value="<?php echo $diagnostico, htmlspecialchars($probabilityText), "%" ?>">
-        <input type="hidden" name="probabilidad" value="<?= htmlspecialchars($probabilityText) ?>">
-        <input type="hidden" name="image" value="<?= $imagePath ?>">
-        <input type="hidden" name="usuario_id" value="<?= $_SESSION['usuario_id'] ?>">
-
-        <div class="row mt-3">
+      <div class="row mt-3">
           <div class="col-md-10">
             <label class="form-label">Paciente</label>
             <select name="paciente" class="form-select" required>
@@ -283,10 +213,101 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
           <div class="col-md-2 text-center">
             <label class="form-label d-block">&nbsp;</label>
             <button type="button" class="btn btn-info w-100" data-bs-toggle="modal" data-bs-target="#detailsModal">
-              Ver Detalles
+              Visualizar seguimiento
             </button>
           </div>
         </div>
+        <div class="row mt-2">
+  <div class="col-12">
+    <label class="form-label">Imágenes guardadas del paciente:</label>
+    <div id="patient-image-gallery" class="d-flex flex-wrap gap-2">
+      <!-- aquí inyectaremos <img> -->
+      <p class="text-muted">Seleccione un paciente para ver sus imágenes.</p>
+    </div>
+  </div>
+</div>
+
+      <!-- FORMULARIO PARA DETECTAR -->
+      <form action="" method="POST" enctype="multipart/form-data" class="custom-search-form">
+        <div class="row">
+          <!-- Imagen de la lesión -->
+          <div class="col-md-5 d-flex align-items-center justify-content-center mb-3">
+            <?php if (!empty($imagePath)): ?>
+              <img src="<?= $imagePath ?>" alt="Imagen cargada" class="img-fluid border" style="height: 350px; width:400px">
+            <?php else: ?>
+              <div class="border rounded d-flex align-items-center justify-content-center" style="height: 300px; width:350px">
+                <span class="text-muted">Sin imagen</span>
+              </div>
+            <?php endif; ?>
+          </div>
+          <!-- Información del resultado -->
+          <div class="col-md-7">
+            <div class="row g-3">
+              <div class="mt-2 row g-3">
+                <div class="d-flex align-items-center gap-2">
+  <button 
+    type="button" 
+    class="btn btn-secondary" 
+    data-bs-toggle="modal" 
+    data-bs-target="#selectImageModal">
+    Seleccionar imagen existente
+  </button>
+  <input type="hidden" name="selected_image" id="selectedImagePath" value="">
+</div>
+<div class="mt-2">
+  <img id="selectedImagePreview" src="" alt="Previsualización" class="img-thumbnail" style="max-width:150px; display:none;">
+</div>
+
+                <div class="d-flex align-items-end">
+                  <button class="btn btn-primary w-100" type="submit" name="action" value="detect">
+                    Cargar y Detectar Lesión
+                  </button>
+                </div>
+                <?php if (!empty($errorMessage)): ?>
+                  <div class="alert alert-danger mt-3">
+                    <?= htmlspecialchars($errorMessage); ?>
+                  </div>
+                <?php endif; $errorMessage=""; ?>
+              </div>
+              <div class="row mt-1">
+                <div class="mb-2">
+                  <label class="form-label">Resultado</label>
+                  <input type="text" class="form-control" name="resultado"
+                         value="<?php echo $diagnostico, htmlspecialchars($probabilityText), "%" ?>"
+                         readonly style="background-color: <?= $bgColor ?>; color: <?= $textColor ?>;">
+                </div>
+                <!-- Mostrar los porcentajes de las características en cada input 
+                <div class="col-md-6 mb-2">
+                  <label class="form-label">Color</label>
+                  <input type="text" class="form-control" name="color" value="<?php echo htmlspecialchars($colorScore); ?>" readonly>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label class="form-label">Borde</label>
+                  <input type="text" class="form-control" name="borde" value="<?php echo htmlspecialchars($bordeScore); ?>" readonly>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label class="form-label">Asimetría</label>
+                  <input type="text" class="form-control" name="asimetria" value="<?php echo htmlspecialchars($asimetriaScore); ?>" readonly>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <label class="form-label">Textura</label>
+                  <input type="text" class="form-control" name="textura" value="<?php echo htmlspecialchars($texturaScore); ?>" readonly>
+                </div>-->
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- FORMULARIO PARA GUARDAR -->
+      <form action="?controller=deteccion&action=save" method="POST">
+        <input type="hidden" name="fecha" value="<?= date('Y-m-d'); ?>">
+        <input type="hidden" name="resultado" value="<?php echo $diagnostico, htmlspecialchars($probabilityText), "%" ?>">
+        <input type="hidden" name="probabilidad" value="<?= htmlspecialchars($probabilityText) ?>">
+        <input type="hidden" name="image" value="<?= $imagePath ?>">
+        <input type="hidden" name="usuario_id" value="<?= $_SESSION['usuario_id'] ?>">
+
+        
 
         <div class="mb-3 mt-3">
           <label class="form-label">Observaciones del Dermatólogo</label>
@@ -397,7 +418,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
                 <th>Diagnóstico</th>
                 <th>Observaciones</th>
                 <th>Recomendación</th>
-                <th>Registrado Por</th>
+                <th>Atendido Por</th>
                 <th>Imagen</th>
               </tr>
             </thead>
@@ -555,6 +576,50 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
     }
   });
 </script>
+<script>
+  document.querySelector('select[name="paciente"]').addEventListener('change', function() {
+    var gallery = document.getElementById('patient-image-gallery');
+    gallery.innerHTML = '';  
+    var id = this.value;
+    if (!id || !patientImages[id] || patientImages[id].length === 0) {
+      gallery.innerHTML = '<p class="text-muted">No hay imágenes guardadas para este paciente.</p>';
+      return;
+    }
+    patientImages[id].forEach(function(src) {
+      var img = document.createElement('img');
+      img.src = src;
+      img.className = 'img-thumbnail';
+      img.style.maxWidth = '120px';
+      img.style.maxHeight = '120px';
+      gallery.appendChild(img);
+    });
+  });
+</script>
+<?php
+  $baseDir = realpath(__DIR__ . '/../../public/directorio');
+  $baseUrl = '/CentroMedico/public/directorio';
+?>
+<script>
+  var patientImages = {};
+  <?php foreach ($pacientes as $p):
+      $id     = $p->getId();
+      $folder = "$baseDir/$id";
+      $files  = is_dir($folder)
+              ? glob("$folder/*.{jpg,jpeg,png,gif}", GLOB_BRACE)
+              : [];
+      echo "patientImages['$id'] = [\n";
+      foreach ($files as $f) {
+          $url = $baseUrl . '/' . $id . '/' . basename($f);
+          echo "  '" . addslashes($url) . "',\n";
+      }
+      echo "];\n";
+  endforeach; ?>
+  console.log('DEBUG patientImages:', patientImages);
+</script>
+
+
+
+
 
 <!-- Enlaces para datepicker si se requieren -->
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.min.css" />
@@ -566,6 +631,80 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
       autoclose: true,
       format: 'yyyy-mm-dd',
       todayHighlight: true
+    });
+  });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var select  = document.querySelector('select[name="paciente"]');
+  var gallery = document.getElementById('patient-image-gallery');
+
+  select.addEventListener('change', function() {
+    gallery.innerHTML = '';
+    var imgs = patientImages[this.value] || [];
+    if (!imgs.length) {
+      gallery.innerHTML = '<p class="text-muted">No hay imágenes guardadas para este paciente.</p>';
+      return;
+    }
+    imgs.forEach(function(src) {
+      var img = document.createElement('img');
+      img.src = src;
+      img.className = 'img-thumbnail';
+      img.style.maxWidth  = '120px';
+      img.style.maxHeight = '120px';
+      gallery.appendChild(img);
+    });
+  });
+});
+
+</script>
+<div class="modal fade" id="selectImageModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Imágenes del paciente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="imageSelectionGallery" class="d-flex flex-wrap gap-2">
+          <p class="text-muted">Seleccione un paciente arriba para ver sus imágenes.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  var selectModal = document.getElementById('selectImageModal');
+  selectModal.addEventListener('show.bs.modal', function () {
+    var select = document.querySelector('select[name="paciente"]');
+    var gallery = document.getElementById('imageSelectionGallery');
+    gallery.innerHTML = '';
+
+    var id = select.value;
+    if (!id || !patientImages[id] || patientImages[id].length === 0) {
+      gallery.innerHTML = '<p class="text-muted">No hay imágenes disponibles para este paciente.</p>';
+      return;
+    }
+
+    patientImages[id].forEach(function(src) {
+      var img = document.createElement('img');
+      img.src = src;
+      img.className = 'img-thumbnail';
+      img.style.cursor = 'pointer';
+      img.style.maxWidth = '120px';
+      img.style.maxHeight = '120px';
+      img.addEventListener('click', function() {
+        // Al hacer clic: guardamos la ruta y cerramos modal
+        document.getElementById('selectedImagePath').value = src;
+        var preview = document.getElementById('selectedImagePreview');
+        preview.src = src;
+        preview.style.display = 'block';
+        bootstrap.Modal.getInstance(selectModal).hide();
+      });
+      gallery.appendChild(img);
     });
   });
 </script>
