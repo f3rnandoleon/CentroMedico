@@ -29,38 +29,76 @@ $bordeScore = "N/A";
 $asimetriaScore = "N/A";
 $texturaScore = "N/A";
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_FILES['image']['tmp_name'])) {
-    $imageTmpPath = $_FILES['image']['tmp_name'];
-    $imageName = uniqid() . "_" . basename($_FILES['image']['name']);
-    $imagePath = $uploadDir . $imageName;
-    if (!file_exists($uploadDir)) { mkdir($uploadDir, 0777, true); }
-    if (move_uploaded_file($imageTmpPath, $imagePath)) {
-        if ($_POST['action'] === 'detect') {
-            $result = predictMelanoma($imagePath);
-            if (isset($result['prediction'])) {
-                $predictionText = $result['prediction'];
-                $diagnostico = ($predictionText === "Melanoma") ? $diagnostic[0] : $diagnostic[1];
-                $probabilityText = $result['probability'] ?? '';
-                $similarImages = $result['similar_images'] ?? [];
-                $similarLabels = $result['similar_labels'] ?? [];
-                
-                // Extraer best_matches y asignar valores para cada característica
-                $bestMatches = $result['best_matches'] ?? [];
-                $colorScore = isset($bestMatches['color']) ? round($bestMatches['color']['score'], 2) . "%" : "N/A";
-                $bordeScore = isset($bestMatches['borde']) ? round($bestMatches['borde']['score'], 2) . "%" : "N/A";
-                $asimetriaScore = isset($bestMatches['asimetria']) ? round($bestMatches['asimetria']['score'], 2) . "%" : "N/A";
-                $texturaScore = isset($bestMatches['textura']) ? round($bestMatches['textura']['score'], 2) . "%" : "N/A";
-            } else {
-                $errorMessage = "Error: " . ($result['error'] ?? 'Desconocido');
-            }
-        }
-    } else {
-        $errorMessage = "Error al guardar la imagen.";
-        $imagePath = "";
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $imagePublicUrl = ""; // <<--- Agrega esto arriba, junto con las demás variables
+
+if (!empty($_POST['selected_image'])) {
+    $publicUrl = $_POST['selected_image'];
+    if (strpos($publicUrl, 'http') === 0) {
+        // Extrae solo el path de la URL (sin dominio)
+        $parsed = parse_url($publicUrl);
+        $publicUrl = $parsed['path'];
     }
-} else {
-    $errorMessage = "Por favor, seleccione una imagen antes de detectar.";
+    $baseDir = realpath(__DIR__ . '/../../public');
+    $relative = str_replace('/CentroMedico/public', '', $publicUrl);
+    $candidate = $baseDir . $relative;
+
+    if (file_exists($candidate)) {
+        $imagePath = $candidate;
+        $imagePublicUrl = $publicUrl; // <<--- ESTA es la pública
+    } else {
+        $errorMessage = "No pude localizar la imagen seleccionada.";
+        $imagePath = "";
+        $imagePublicUrl = "";
+    }
 }
+
+    // 2) Si no hay imagen seleccionada, procesar posible subida
+    elseif (isset($_FILES['image']) && !empty($_FILES['image']['tmp_name'])) {
+    $imageTmpPath = $_FILES['image']['tmp_name'];
+    $imageName    = uniqid() . "_" . basename($_FILES['image']['name']);
+    $uploadDir    = __DIR__ . '/../../public/uploads/';
+    if (!file_exists($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+    $destPath = $uploadDir . $imageName;
+    if (move_uploaded_file($imageTmpPath, $destPath)) {
+        $imagePath = $destPath;
+        $imagePublicUrl = '/CentroMedico/public/uploads/' . $imageName; // <<--- Así!
+    } else {
+        $errorMessage = "Error al guardar la imagen subida.";
+        $imagePath = "";
+        $imagePublicUrl = "";
+    }
+}
+
+    // 3) Si no hay ninguna imagen, mensaje de error
+    else {
+        $errorMessage = "Por favor, seleccione o suba una imagen.";
+        $imagePath    = "";
+    }
+
+    // 4) Si ya tenemos ruta válida y el usuario pidió detectar
+    if (!empty($imagePath) && isset($_POST['action']) && $_POST['action'] === 'detect') {
+        $result = predictMelanoma($imagePath);
+        if (isset($result['prediction'])) {
+            $predictionText = $result['prediction'];
+            $diagnostico = ($predictionText === "Melanoma") ? $diagnostic[0] : $diagnostic[1];
+            $probabilityText = $result['probability'] ?? '';
+            $similarImages = $result['similar_images'] ?? [];
+            $similarLabels = $result['similar_labels'] ?? [];
+            $bestMatches = $result['best_matches'] ?? [];
+            $colorScore = isset($bestMatches['color']) ? round($bestMatches['color']['score'], 2) . "%" : "N/A";
+            $bordeScore = isset($bestMatches['borde']) ? round($bestMatches['borde']['score'], 2) . "%" : "N/A";
+            $asimetriaScore = isset($bestMatches['asimetria']) ? round($bestMatches['asimetria']['score'], 2) . "%" : "N/A";
+            $texturaScore = isset($bestMatches['textura']) ? round($bestMatches['textura']['score'], 2) . "%" : "N/A";
+        } else {
+            $errorMessage = "Error: " . ($result['error'] ?? 'Desconocido');
+        }
+    }
+}
+
+
 ?>
 <?php
     $bgColor = ($predictionText === "Melanoma") ? "var(--bs-red)" : "var(--bs-teal)";
@@ -188,58 +226,58 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
       <div class="row mt-3">
           <div class="col-md-10">
             <label class="form-label">Paciente</label>
-            <select name="paciente" class="form-select" required>
-              <option value="">Seleccione un paciente</option>
-              <?php 
-              $pacientes = Paciente::all();
-              foreach ($pacientes as $paciente) { ?>
-                <option value="<?= $paciente->getId(); ?>"
-                  data-cedula="<?= htmlspecialchars($paciente->getCedula()); ?>"
-                  data-nombres="<?= htmlspecialchars($paciente->getNombres()); ?>"
-                  data-apellidos="<?= htmlspecialchars($paciente->getApellidos()); ?>"
-                  data-ocupacion="<?= htmlspecialchars($paciente->getOcupacion()); ?>"
-                  data-estcivil="<?= htmlspecialchars($paciente->getEstcivil()); ?>"
-                  data-genero="<?= htmlspecialchars($paciente->getGenero()); ?>"
-                  data-fnacimiento="<?= htmlspecialchars($paciente->getFnacimiento()); ?>"
-                  data-email="<?= htmlspecialchars($paciente->getEmail()); ?>"
-                  data-direccion="<?= htmlspecialchars($paciente->getDireccion()); ?>"
-                  data-telefono="<?= htmlspecialchars($paciente->getTelefono()); ?>"
-                >
-                  <?= $paciente->getNombres() . " " . $paciente->getApellidos(); ?>
-                </option>
-              <?php } ?>
-            </select>
+            <?php $pacientes = Paciente::all(); ?>
+<input 
+  class="form-control" 
+  id="patientInput" 
+  name="paciente_name" 
+  list="patientsList" 
+  placeholder="Escribe el nombre del paciente…" 
+  autocomplete="off"
+  required
+>
+<datalist id="patientsList">
+  <?php foreach ($pacientes as $paciente): 
+      $fullName = htmlspecialchars($paciente->getNombres() . ' ' . $paciente->getApellidos(), ENT_QUOTES);
+  ?>
+    <option value="<?= $fullName ?>"></option>
+  <?php endforeach; ?>
+</datalist>
+<input type="hidden" name="paciente_id" id="patientIdInput" value="">
+
+            
+
           </div>
           <div class="col-md-2 text-center">
             <label class="form-label d-block">&nbsp;</label>
-            <button type="button" class="btn btn-info w-100" data-bs-toggle="modal" data-bs-target="#detailsModal">
+            <button 
+              type="button" 
+              class="btn btn-info w-100"
+              id="showDetailsBtn">
               Visualizar seguimiento
             </button>
+
           </div>
         </div>
-        <div class="row mt-2">
-  <div class="col-12">
-    <label class="form-label">Imágenes guardadas del paciente:</label>
-    <div id="patient-image-gallery" class="d-flex flex-wrap gap-2">
-      <!-- aquí inyectaremos <img> -->
-      <p class="text-muted">Seleccione un paciente para ver sus imágenes.</p>
-    </div>
-  </div>
+        
+  
 </div>
 
       <!-- FORMULARIO PARA DETECTAR -->
       <form action="" method="POST" enctype="multipart/form-data" class="custom-search-form">
         <div class="row">
           <!-- Imagen de la lesión -->
-          <div class="col-md-5 d-flex align-items-center justify-content-center mb-3">
-            <?php if (!empty($imagePath)): ?>
-              <img src="<?= $imagePath ?>" alt="Imagen cargada" class="img-fluid border" style="height: 350px; width:400px">
+          <div class="col-md-5 d-flex align-items-center justify-content-center mb-3" id="mainImageContainer">
+            <?php if (!empty($imagePublicUrl)): ?>
+              <img id="mainImagePreview" src="<?= $imagePublicUrl ?>" alt="Imagen cargada" class="img-fluid border" style="height:350px; width:400px">
             <?php else: ?>
-              <div class="border rounded d-flex align-items-center justify-content-center" style="height: 300px; width:350px">
+              <div id="noImagePlaceholder" class="border rounded d-flex align-items-center justify-content-center" style="height:300px; width:350px">
                 <span class="text-muted">Sin imagen</span>
               </div>
             <?php endif; ?>
+
           </div>
+
           <!-- Información del resultado -->
           <div class="col-md-7">
             <div class="row g-3">
@@ -254,9 +292,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
   </button>
   <input type="hidden" name="selected_image" id="selectedImagePath" value="">
 </div>
-<div class="mt-2">
-  <img id="selectedImagePreview" src="" alt="Previsualización" class="img-thumbnail" style="max-width:150px; display:none;">
-</div>
+
 
                 <div class="d-flex align-items-end">
                   <button class="btn btn-primary w-100" type="submit" name="action" value="detect">
@@ -486,6 +522,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
     }
   });
 </script>
+<script>
+  var patientsData = [
+    <?php foreach ($pacientes as $paciente): 
+       $id   = $paciente->getId();
+       $name = addslashes($paciente->getNombres() . ' ' . $paciente->getApellidos());
+    ?>
+      { id: '<?= $id ?>', name: '<?= $name ?>' },
+    <?php endforeach; ?>
+  ];
+</script>
 
 <!-- Script para cargar datos en el modal de detalles -->
 <script>
@@ -528,73 +574,54 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
   ?>
 
   document.getElementById('detailsModal').addEventListener('show.bs.modal', function (event) {
-    var selectPaciente = document.querySelector('select[name="paciente"]');
-    if (selectPaciente) {
-      var selectedOption = selectPaciente.options[selectPaciente.selectedIndex];
-      if (selectedOption && selectedOption.value !== "") {
-        document.getElementById('patientCedula').textContent = selectedOption.getAttribute('data-cedula') || "-";
-        document.getElementById('patientNombre').textContent = (selectedOption.getAttribute('data-nombres') || "-") + " " + (selectedOption.getAttribute('data-apellidos') || "-");
-        document.getElementById('patientOcupacion').textContent = selectedOption.getAttribute('data-ocupacion') || "-";
-        document.getElementById('patientEstCivil').textContent = selectedOption.getAttribute('data-estcivil') || "-";
-        document.getElementById('patientGenero').textContent = selectedOption.getAttribute('data-genero') || "-";
-        document.getElementById('patientFnacimiento').textContent = selectedOption.getAttribute('data-fnacimiento') || "-";
-        document.getElementById('patientEmail').textContent = selectedOption.getAttribute('data-email') || "-";
-        document.getElementById('patientDireccion').textContent = selectedOption.getAttribute('data-direccion') || "-";
-        document.getElementById('patientTelefono').textContent = selectedOption.getAttribute('data-telefono') || "-";
-        
-        var patientId = selectedOption.value;
-        var historyTableBody = document.getElementById('historyTableBody');
-        historyTableBody.innerHTML = "";
-        if (clinicalHistories[patientId] && clinicalHistories[patientId].length > 0) {
-          clinicalHistories[patientId].forEach(function(history) {
-            var tr = document.createElement('tr');
-            tr.innerHTML = '<td>' + history.fregistro + '</td>' +
-                           '<td>' + history.numero + '</td>' +
-                           '<td>' + history.motivo + '</td>' +
-                           '<td>' + history.diagnostico + '</td>' +
-                           '<td>' + history.observaciones + '</td>' +
-                           '<td>' + history.recomendacion + '</td>' +
-                           '<td>' + history.registrado_por + '</td>' +
-                           '<td>' + (history.imagen ? '<img src="'+ history.imagen +'" alt="Imagen Historial" style="max-width:100px;">' : 'Sin imagen') + '</td>';
-            historyTableBody.appendChild(tr);
-          });
-        } else {
-          historyTableBody.innerHTML = '<tr><td colspan="8" class="text-muted">No hay historial clínico registrado para este paciente.</td></tr>';
-        }
-      } else {
-        document.getElementById('patientCedula').textContent = "-";
-        document.getElementById('patientNombre').textContent = "-";
-        document.getElementById('patientOcupacion').textContent = "-";
-        document.getElementById('patientEstCivil').textContent = "-";
-        document.getElementById('patientGenero').textContent = "-";
-        document.getElementById('patientFnacimiento').textContent = "-";
-        document.getElementById('patientEmail').textContent = "-";
-        document.getElementById('patientDireccion').textContent = "-";
-        document.getElementById('patientTelefono').textContent = "-";
-        document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="8" class="text-muted">No hay historial clínico registrado.</td></tr>';
-      }
-    }
-  });
-</script>
-<script>
-  document.querySelector('select[name="paciente"]').addEventListener('change', function() {
-    var gallery = document.getElementById('patient-image-gallery');
-    gallery.innerHTML = '';  
-    var id = this.value;
-    if (!id || !patientImages[id] || patientImages[id].length === 0) {
-      gallery.innerHTML = '<p class="text-muted">No hay imágenes guardadas para este paciente.</p>';
-      return;
-    }
-    patientImages[id].forEach(function(src) {
-      var img = document.createElement('img');
-      img.src = src;
-      img.className = 'img-thumbnail';
-      img.style.maxWidth = '120px';
-      img.style.maxHeight = '120px';
-      gallery.appendChild(img);
+  var inputId = document.getElementById('patientIdInput');
+  var id = inputId.value;
+
+  // Si no hay ID válido, limpia los campos y sal
+  if (!id || !clinicalHistories[id]) {
+    document.getElementById('patientCedula').textContent = "-";
+    document.getElementById('patientNombre').textContent = "-";
+    document.getElementById('patientOcupacion').textContent = "-";
+    document.getElementById('patientEstCivil').textContent = "-";
+    document.getElementById('patientGenero').textContent = "-";
+    document.getElementById('patientFnacimiento').textContent = "-";
+    document.getElementById('patientEmail').textContent = "-";
+    document.getElementById('patientDireccion').textContent = "-";
+    document.getElementById('patientTelefono').textContent = "-";
+    document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="8" class="text-muted">No hay historial clínico registrado.</td></tr>';
+    return;
+  }
+
+  // Encuentra el paciente (opcional, para info extra)
+  var paciente = patientsData.find(function(p) { return p.id === id; });
+
+  // Si quieres mostrar los datos (necesitas PHP/Javascript que pase más info si no tienes en patientsData)
+  document.getElementById('patientNombre').textContent = paciente ? paciente.name : "-";
+  // ... si tienes más datos en patientsData, puedes mostrarlos aquí ...
+
+  // Historial clínico:
+  var historyTableBody = document.getElementById('historyTableBody');
+  historyTableBody.innerHTML = "";
+  if (clinicalHistories[id] && clinicalHistories[id].length > 0) {
+    clinicalHistories[id].forEach(function(history) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + history.fregistro + '</td>' +
+                     '<td>' + history.numero + '</td>' +
+                     '<td>' + history.motivo + '</td>' +
+                     '<td>' + history.diagnostico + '</td>' +
+                     '<td>' + history.observaciones + '</td>' +
+                     '<td>' + history.recomendacion + '</td>' +
+                     '<td>' + history.registrado_por + '</td>' +
+                     '<td>' + (history.imagen ? '<img src="'+ history.imagen +'" alt="Imagen Historial" style="max-width:100px;">' : 'Sin imagen') + '</td>';
+      historyTableBody.appendChild(tr);
     });
-  });
+  } else {
+    historyTableBody.innerHTML = '<tr><td colspan="8" class="text-muted">No hay historial clínico registrado para este paciente.</td></tr>';
+  }
+});
+
 </script>
+
 <?php
   $baseDir = realpath(__DIR__ . '/../../public/directorio');
   $baseUrl = '/CentroMedico/public/directorio';
@@ -634,30 +661,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image']) && !empty($_
     });
   });
 </script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  var select  = document.querySelector('select[name="paciente"]');
-  var gallery = document.getElementById('patient-image-gallery');
 
-  select.addEventListener('change', function() {
-    gallery.innerHTML = '';
-    var imgs = patientImages[this.value] || [];
-    if (!imgs.length) {
-      gallery.innerHTML = '<p class="text-muted">No hay imágenes guardadas para este paciente.</p>';
-      return;
-    }
-    imgs.forEach(function(src) {
-      var img = document.createElement('img');
-      img.src = src;
-      img.className = 'img-thumbnail';
-      img.style.maxWidth  = '120px';
-      img.style.maxHeight = '120px';
-      gallery.appendChild(img);
-    });
-  });
-});
-
-</script>
 <div class="modal fade" id="selectImageModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -677,37 +681,97 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
 </div>
 <script>
-  var selectModal = document.getElementById('selectImageModal');
-  selectModal.addEventListener('show.bs.modal', function () {
-    var select = document.querySelector('select[name="paciente"]');
-    var gallery = document.getElementById('imageSelectionGallery');
-    gallery.innerHTML = '';
+var selectModal = document.getElementById('selectImageModal');
+selectModal.addEventListener('show.bs.modal', function () {
+  var id = document.getElementById('patientIdInput').value;
+  var gallery = document.getElementById('imageSelectionGallery');
+  gallery.innerHTML = '';
+  var imgs = patientImages[id] || [];
+  if (!id || imgs.length === 0) {
+    gallery.innerHTML = '<p class="text-muted">No hay imágenes disponibles para este paciente.</p>';
+    return;
+  }
+  imgs.forEach(function(src) {
+    var img = document.createElement('img');
+    img.src = src;
+    img.className = 'img-thumbnail';
+    img.style.cursor = 'pointer';
+    img.style.maxWidth = '120px';
+    img.style.maxHeight = '120px';
+    img.addEventListener('click', function() {
+  var src = this.src;
 
-    var id = select.value;
-    if (!id || !patientImages[id] || patientImages[id].length === 0) {
-      gallery.innerHTML = '<p class="text-muted">No hay imágenes disponibles para este paciente.</p>';
+  // 1) Pon la ruta en el hidden
+  var url = new URL(src, window.location.origin);
+document.getElementById('selectedImagePath').value = url.pathname;
+
+
+  // 2) Actualiza SOLO el preview grande (mainImageContainer)
+  var container = document.getElementById('mainImageContainer');
+  var oldPlaceholder = document.getElementById('noImagePlaceholder');
+  if (oldPlaceholder) oldPlaceholder.remove();
+
+  var mainImg = document.getElementById('mainImagePreview');
+  if (!mainImg) {
+    mainImg = document.createElement('img');
+    mainImg.id = 'mainImagePreview';
+    mainImg.className = 'img-fluid border';
+    mainImg.style.height = '350px';
+    mainImg.style.width  = '400px';
+    container.appendChild(mainImg);
+  }
+  mainImg.src = src;
+
+  // 3) Limpia el file input para que no choque
+  document.getElementById('imageUpload').value = '';
+
+  // 4) Cierra modal
+  bootstrap.Modal.getInstance(selectModal).hide();
+});
+
+    gallery.appendChild(img);
+  });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var inputName = document.getElementById('patientInput');
+  var inputId   = document.getElementById('patientIdInput');
+
+  inputName.addEventListener('input', function() {
+    var val = this.value.trim();
+    var match = patientsData.find(function(p) {
+      return p.name.toLowerCase() === val.toLowerCase();
+    });
+    if (match) {
+      inputId.value = match.id;
+    } else {
+      inputId.value = '';
+    }
+  });
+
+  inputName.addEventListener('blur', function() {
+    if (!inputId.value) {
+      this.value = '';
+    }
+  });
+});
+document.addEventListener('DOMContentLoaded', function() {
+  var showDetailsBtn = document.getElementById('showDetailsBtn');
+  showDetailsBtn.addEventListener('click', function() {
+    var id = document.getElementById('patientIdInput').value;
+    if (!id) {
+      alert('Seleccione un paciente válido primero.');
       return;
     }
-
-    patientImages[id].forEach(function(src) {
-      var img = document.createElement('img');
-      img.src = src;
-      img.className = 'img-thumbnail';
-      img.style.cursor = 'pointer';
-      img.style.maxWidth = '120px';
-      img.style.maxHeight = '120px';
-      img.addEventListener('click', function() {
-        // Al hacer clic: guardamos la ruta y cerramos modal
-        document.getElementById('selectedImagePath').value = src;
-        var preview = document.getElementById('selectedImagePreview');
-        preview.src = src;
-        preview.style.display = 'block';
-        bootstrap.Modal.getInstance(selectModal).hide();
-      });
-      gallery.appendChild(img);
-    });
+    var detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+    detailsModal.show();
   });
+});
+
 </script>
+
 
 <!-- Modal para mostrar detalles -->
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
