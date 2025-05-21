@@ -10,8 +10,9 @@ class Cita
     private $estado;
     private $observaciones;
     private $fcreado_en;
+    private $usuario;
 
-    function __construct($id, $paciente, $fecha, $hora, $motivo, $estado, $observaciones, $fcreado_en)
+    function __construct($id, $paciente, $fecha, $hora, $motivo, $estado, $observaciones, $fcreado_en,$usuario)
     {
         $this->setId($id);
         $this->setPaciente($paciente);
@@ -21,6 +22,7 @@ class Cita
         $this->setEstado($estado);
         $this->setObservaciones($observaciones);
         $this->setFcreadoEn($fcreado_en);
+        $this->setUsuario($usuario);
     }
 
     /*** GETTERS Y SETTERS ***/
@@ -80,14 +82,21 @@ class Cita
         $this->fcreado_en = $fcreado_en;
     }
 
+    public function getUsuario(){
+        return $this->usuario;
+    }
+    public function setUsuario($usuario){
+        $this->usuario = $usuario;
+    }
+
     /*** FUNCIONES CRUD ***/
 
     // Inserta una nueva cita (el campo id se autogenera y fcreado_en se asigna por la base de datos)
     public static function save($cita) {
         $db = Db::getConnect();
         $insert = $db->prepare('
-            INSERT INTO citas (paciente, fecha, hora, motivo, estado, observaciones) 
-            VALUES (:paciente, :fecha, :hora, :motivo, :estado, :observaciones)
+            INSERT INTO citas (paciente, fecha, hora, motivo, estado, observaciones,usuario) 
+            VALUES (:paciente, :fecha, :hora, :motivo, :estado, :observaciones,:usuario)
         ');
         $insert->bindValue('paciente', $cita->getPaciente());
         $insert->bindValue('fecha', $cita->getFecha());
@@ -95,6 +104,8 @@ class Cita
         $insert->bindValue('motivo', $cita->getMotivo());
         $insert->bindValue('estado', $cita->getEstado());
         $insert->bindValue('observaciones', $cita->getObservaciones());
+        $insert->bindValue('usuario', $cita->getUsuario());
+
         $insert->execute();
     }
     public static function delete($id) {
@@ -109,7 +120,7 @@ class Cita
         $db = Db::getConnect();
         $update = $db->prepare('
             UPDATE citas 
-            SET paciente = :paciente, fecha = :fecha, hora = :hora, motivo = :motivo, estado = :estado, observaciones = :observaciones
+            SET paciente = :paciente, fecha = :fecha, hora = :hora, motivo = :motivo, estado = :estado, observaciones = :observaciones, usuario = :usuario
             WHERE id = :id
         ');
         $update->bindValue('id', $cita->getId());
@@ -119,6 +130,8 @@ class Cita
         $update->bindValue('motivo', $cita->getMotivo());
         $update->bindValue('estado', $cita->getEstado());
         $update->bindValue('observaciones', $cita->getObservaciones());
+        $update->bindValue('usuario', $cita->getUsuario());
+
         $update->execute();
     }
 
@@ -136,7 +149,9 @@ class Cita
                 $row['motivo'],
                 $row['estado'],
                 $row['observaciones'],
-                $row['fcreado_en']
+                $row['fcreado_en'],
+                $row['usuario']
+
             );
         }
         return $listaCitas;
@@ -158,7 +173,32 @@ class Cita
                 $row['motivo'],
                 $row['estado'],
                 $row['observaciones'],
-                $row['fcreado_en']
+                $row['fcreado_en'],
+                $row['usuario']
+
+            );
+        }
+        return $listaCitas;
+    }
+
+        // Retorna las citas de un paciente en específico
+    public static function getAllByUser($idUser) {
+        $listaCitas = [];
+        $db = Db::getConnect();
+        $select = $db->prepare('SELECT * FROM citas WHERE usuario = :id');
+        $select->bindParam('id', $idUser);
+        $select->execute();
+        foreach ($select->fetchAll() as $row) {
+            $listaCitas[] = new Cita(
+                $row['id'],
+                $row['paciente'],
+                $row['fecha'],
+                $row['hora'],
+                $row['motivo'],
+                $row['estado'],
+                $row['observaciones'],
+                $row['fcreado_en'],
+                $row['usuario']
             );
         }
         return $listaCitas;
@@ -180,7 +220,9 @@ class Cita
                 $row['motivo'],
                 $row['estado'],
                 $row['observaciones'],
-                $row['fcreado_en']
+                $row['fcreado_en'],
+                $row['usuario']
+
             );
         }
         return null;
@@ -209,7 +251,9 @@ class Cita
                 $row['motivo'],
                 $row['estado'],
                 $row['observaciones'],
-                $row['fcreado_en']
+                $row['fcreado_en'],
+                $row['usuario']
+
             );
         }
         return $listaCitas;

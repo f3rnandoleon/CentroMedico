@@ -99,7 +99,26 @@ function invertDir($dir) {
             <textarea class="form-control" id="observaciones" name="observaciones" placeholder="Ingrese observaciones"><?php echo $cita->getObservaciones(); ?></textarea>
           </div>
         </div>
-        
+        <!-- Dermatólogo -->
+<div class="mb-3 row">
+  <label for="usuario" class="col-sm-2 col-form-label">Dermatólogo:</label>
+  <div class="col-sm-10">
+    <select name="usuario" class="form-select" required>
+      <option value="">Seleccione un dermatólogo</option>
+      <?php 
+      $usuarios = Usuario::all();
+      foreach ($usuarios as $usuario) { 
+        if (strtolower($usuario->getRol()) == 'dermatologo') { ?>
+          <option value="<?= $usuario->getId(); ?>"
+            <?php if ($usuario->getId() == $cita->getUsuario()) echo "selected"; ?>>
+            <?= $usuario->getNombres() . " " . $usuario->getApellidos(); ?>
+          </option>
+      <?php }
+      } ?>
+    </select>
+  </div>
+</div>
+
         <!-- Botones Guardar / Cancelar -->
         <div class="row mt-4">
           <div class="col-sm-2 offset-sm-2">

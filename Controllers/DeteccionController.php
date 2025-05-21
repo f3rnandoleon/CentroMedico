@@ -25,12 +25,19 @@ class DeteccionController {
                 $imageUrl = $imagePath;
             }
         }
-        
+        if (!empty($_POST['image'])) {
+            $imageUrl = $_POST['image'];
+            // Convierte ruta absoluta a relativa si es necesario
+            $pos = strpos($imageUrl, "public/");
+            if ($pos !== false) {
+                $imageUrl = substr($imageUrl, $pos);
+            }
+        }
         $historia = new HistoClinica(
             null, $_POST['fecha'], $idHistoria, "Detección de Melanoma", 
             $_POST['resultado'] , 
             $_POST['observaciones'], $_POST['recomendacion'], 
-            $imageUrl, $_POST['paciente'], $_POST['usuario_id']
+            $imageUrl, $_POST['paciente'] ?? null, $_POST['usuario_id'] ?? null
         );
     
         HistoClinica::save($historia);

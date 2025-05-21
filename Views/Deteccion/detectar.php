@@ -19,6 +19,7 @@ $diagnostico = "";
 $probabilityText = "";
 $errorMessage = "";
 $imagePath = "";
+$imagePublicUrl = "";
 $similarImages = [];
 $similarLabels = [];
 $diagnostic = ["La Imagen es MELANOMA con un porcentaje de ", "La Imagen es NO MELANOMA con un porcentaje de "];
@@ -30,55 +31,52 @@ $asimetriaScore = "N/A";
 $texturaScore = "N/A";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $imagePublicUrl = ""; // <<--- Agrega esto arriba, junto con las demás variables
+    // Mantener el valor del paciente seleccionado tras cada submit
+    $paciente_id = $_POST['paciente'] ?? '';
+    $paciente_name = $_POST['paciente_name'] ?? '';
 
-if (!empty($_POST['selected_image'])) {
-    $publicUrl = $_POST['selected_image'];
-    if (strpos($publicUrl, 'http') === 0) {
-        // Extrae solo el path de la URL (sin dominio)
-        $parsed = parse_url($publicUrl);
-        $publicUrl = $parsed['path'];
+    if (!empty($_POST['selected_image'])) {
+        $publicUrl = $_POST['selected_image'];
+        if (strpos($publicUrl, 'http') === 0) {
+            $parsed = parse_url($publicUrl);
+            $publicUrl = $parsed['path'];
+        }
+        $baseDir = realpath(__DIR__ . '/../../public');
+        $relative = str_replace('/CentroMedico/public', '', $publicUrl);
+        $candidate = $baseDir . $relative;
+        if (file_exists($candidate)) {
+            $imagePath = $candidate;
+            $imagePublicUrl = $publicUrl;
+        } else {
+            $errorMessage = "No pude localizar la imagen seleccionada.";
+            $imagePath = "";
+            $imagePublicUrl = "";
+        }
     }
-    $baseDir = realpath(__DIR__ . '/../../public');
-    $relative = str_replace('/CentroMedico/public', '', $publicUrl);
-    $candidate = $baseDir . $relative;
-
-    if (file_exists($candidate)) {
-        $imagePath = $candidate;
-        $imagePublicUrl = $publicUrl; // <<--- ESTA es la pública
-    } else {
-        $errorMessage = "No pude localizar la imagen seleccionada.";
-        $imagePath = "";
-        $imagePublicUrl = "";
-    }
-}
-
-    // 2) Si no hay imagen seleccionada, procesar posible subida
+    // Si sube imagen nueva
     elseif (isset($_FILES['image']) && !empty($_FILES['image']['tmp_name'])) {
-    $imageTmpPath = $_FILES['image']['tmp_name'];
-    $imageName    = uniqid() . "_" . basename($_FILES['image']['name']);
-    $uploadDir    = __DIR__ . '/../../public/uploads/';
-    if (!file_exists($uploadDir)) {
-        mkdir($uploadDir, 0777, true);
-    }
-    $destPath = $uploadDir . $imageName;
-    if (move_uploaded_file($imageTmpPath, $destPath)) {
-        $imagePath = $destPath;
-        $imagePublicUrl = '/CentroMedico/public/uploads/' . $imageName; // <<--- Así!
-    } else {
-        $errorMessage = "Error al guardar la imagen subida.";
-        $imagePath = "";
-        $imagePublicUrl = "";
-    }
-}
-
-    // 3) Si no hay ninguna imagen, mensaje de error
-    else {
-        $errorMessage = "Por favor, seleccione o suba una imagen.";
-        $imagePath    = "";
+        $imageTmpPath = $_FILES['image']['tmp_name'];
+        $imageName    = uniqid() . "_" . basename($_FILES['image']['name']);
+        $uploadDir    = __DIR__ . '/../../public/uploads/';
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        $destPath = $uploadDir . $imageName;
+        if (move_uploaded_file($imageTmpPath, $destPath)) {
+            $imagePath = $destPath;
+            $imagePublicUrl = '/CentroMedico/public/uploads/' . $imageName;
+        } else {
+            $errorMessage = "Error al guardar la imagen subida.";
+            $imagePath = "";
+            $imagePublicUrl = "";
+        }
+    } else if (!empty($_POST['image_path']) && !empty($_POST['image_public_url'])) {
+        // Mantener valores si ya existen (post submit intermedio)
+        $imagePath = $_POST['image_path'];
+        $imagePublicUrl = $_POST['image_public_url'];
     }
 
-    // 4) Si ya tenemos ruta válida y el usuario pidió detectar
+    // Si ya tenemos ruta válida y el usuario pidió detectar
     if (!empty($imagePath) && isset($_POST['action']) && $_POST['action'] === 'detect') {
         $result = predictMelanoma($imagePath);
         if (isset($result['prediction'])) {
@@ -96,13 +94,11 @@ if (!empty($_POST['selected_image'])) {
             $errorMessage = "Error: " . ($result['error'] ?? 'Desconocido');
         }
     }
+
+  
 }
-
-
-?>
-<?php
-    $bgColor = ($predictionText === "Melanoma") ? "var(--bs-red)" : "var(--bs-teal)";
-    $textColor = ($predictionText === "") ? "var(--bs-gray-dark)" : "var(--bs-white)";
+$bgColor = ($predictionText === "Melanoma") ? "var(--bs-red)" : "var(--bs-teal)";
+$textColor = ($predictionText === "") ? "var(--bs-gray-dark)" : "var(--bs-white)";
 ?>
 <?php if (isset($_SESSION['mensaje'])): ?>
   <div class="alert alert-success position-fixed top-20 start-50 translate-middle-x mt-3 shadow" style="z-index: 9999; max-width: 400px;">
@@ -223,30 +219,30 @@ if (!empty($_POST['selected_image'])) {
       <h5 class="mb-0">Datos previos del informe médico</h5>
     </div>
     <div class="card-body custom-card-body">
-      <div class="row mt-3">
+      <form action="" method="POST" enctype="multipart/form-data" class="custom-search-form">
+        <!-- ---------- DATOS DEL PACIENTE (AUTOCOMPLETAR) --------- -->
+        <div class="row mt-3">
           <div class="col-md-10">
             <label class="form-label">Paciente</label>
             <?php $pacientes = Paciente::all(); ?>
-<input 
-  class="form-control" 
-  id="patientInput" 
-  name="paciente_name" 
-  list="patientsList" 
-  placeholder="Escribe el nombre del paciente…" 
-  autocomplete="off"
-  required
->
-<datalist id="patientsList">
-  <?php foreach ($pacientes as $paciente): 
-      $fullName = htmlspecialchars($paciente->getNombres() . ' ' . $paciente->getApellidos(), ENT_QUOTES);
-  ?>
-    <option value="<?= $fullName ?>"></option>
-  <?php endforeach; ?>
-</datalist>
-<input type="hidden" name="paciente_id" id="patientIdInput" value="">
-
-            
-
+            <input 
+              class="form-control" 
+              id="patientInput" 
+              name="paciente_name" 
+              list="patientsList" 
+              placeholder="Escribe el nombre del paciente…" 
+              autocomplete="off"
+              required
+              value="<?= htmlspecialchars($paciente_name ?? '') ?>"
+            >
+            <datalist id="patientsList">
+              <?php foreach ($pacientes as $paciente): 
+                  $fullName = htmlspecialchars($paciente->getNombres() . ' ' . $paciente->getApellidos(), ENT_QUOTES);
+              ?>
+                <option value="<?= $fullName ?>"></option>
+              <?php endforeach; ?>
+            </datalist>
+            <input type="hidden" name="paciente" id="patientIdInput" value="<?= htmlspecialchars($paciente_id ?? '') ?>">
           </div>
           <div class="col-md-2 text-center">
             <label class="form-label d-block">&nbsp;</label>
@@ -256,17 +252,11 @@ if (!empty($_POST['selected_image'])) {
               id="showDetailsBtn">
               Visualizar seguimiento
             </button>
-
           </div>
         </div>
-        
-  
-</div>
 
-      <!-- FORMULARIO PARA DETECTAR -->
-      <form action="" method="POST" enctype="multipart/form-data" class="custom-search-form">
+        <!-- ---------- IMAGEN Y DETECCIÓN ---------- -->
         <div class="row">
-          <!-- Imagen de la lesión -->
           <div class="col-md-5 d-flex align-items-center justify-content-center mb-3" id="mainImageContainer">
             <?php if (!empty($imagePublicUrl)): ?>
               <img id="mainImagePreview" src="<?= $imagePublicUrl ?>" alt="Imagen cargada" class="img-fluid border" style="height:350px; width:400px">
@@ -275,25 +265,20 @@ if (!empty($_POST['selected_image'])) {
                 <span class="text-muted">Sin imagen</span>
               </div>
             <?php endif; ?>
-
           </div>
-
-          <!-- Información del resultado -->
           <div class="col-md-7">
             <div class="row g-3">
               <div class="mt-2 row g-3">
                 <div class="d-flex align-items-center gap-2">
-  <button 
-    type="button" 
-    class="btn btn-secondary" 
-    data-bs-toggle="modal" 
-    data-bs-target="#selectImageModal">
-    Seleccionar imagen existente
-  </button>
-  <input type="hidden" name="selected_image" id="selectedImagePath" value="">
-</div>
-
-
+                  <button 
+                    type="button" 
+                    class="btn btn-secondary" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#selectImageModal">
+                    Seleccionar imagen existente
+                  </button>
+                  <input type="hidden" name="selected_image" id="selectedImagePath" value="">
+                </div>
                 <div class="d-flex align-items-end">
                   <button class="btn btn-primary w-100" type="submit" name="action" value="detect">
                     Cargar y Detectar Lesión
@@ -303,61 +288,40 @@ if (!empty($_POST['selected_image'])) {
                   <div class="alert alert-danger mt-3">
                     <?= htmlspecialchars($errorMessage); ?>
                   </div>
-                <?php endif; $errorMessage=""; ?>
+                <?php endif; ?>
               </div>
               <div class="row mt-1">
                 <div class="mb-2">
                   <label class="form-label">Resultado</label>
                   <input type="text" class="form-control" name="resultado"
-                         value="<?php echo $diagnostico, htmlspecialchars($probabilityText), "%" ?>"
+                         value="<?= $diagnostico . htmlspecialchars($probabilityText) . "%" ?>"
                          readonly style="background-color: <?= $bgColor ?>; color: <?= $textColor ?>;">
                 </div>
-                <!-- Mostrar los porcentajes de las características en cada input 
-                <div class="col-md-6 mb-2">
-                  <label class="form-label">Color</label>
-                  <input type="text" class="form-control" name="color" value="<?php echo htmlspecialchars($colorScore); ?>" readonly>
-                </div>
-                <div class="col-md-6 mb-2">
-                  <label class="form-label">Borde</label>
-                  <input type="text" class="form-control" name="borde" value="<?php echo htmlspecialchars($bordeScore); ?>" readonly>
-                </div>
-                <div class="col-md-6 mb-2">
-                  <label class="form-label">Asimetría</label>
-                  <input type="text" class="form-control" name="asimetria" value="<?php echo htmlspecialchars($asimetriaScore); ?>" readonly>
-                </div>
-                <div class="col-md-6 mb-2">
-                  <label class="form-label">Textura</label>
-                  <input type="text" class="form-control" name="textura" value="<?php echo htmlspecialchars($texturaScore); ?>" readonly>
-                </div>-->
+                <!-- Puedes incluir aquí las características (color, borde, etc.) si quieres -->
               </div>
             </div>
           </div>
         </div>
-      </form>
 
-      <!-- FORMULARIO PARA GUARDAR -->
-      <form action="?controller=deteccion&action=save" method="POST">
+        <!-- ---------- GUARDADO ---------- -->
         <input type="hidden" name="fecha" value="<?= date('Y-m-d'); ?>">
-        <input type="hidden" name="resultado" value="<?php echo $diagnostico, htmlspecialchars($probabilityText), "%" ?>">
         <input type="hidden" name="probabilidad" value="<?= htmlspecialchars($probabilityText) ?>">
-        <input type="hidden" name="image" value="<?= $imagePath ?>">
+        <input type="hidden" name="image_path" value="<?= htmlspecialchars($imagePath) ?>">
+        <input type="hidden" name="image" value="<?= htmlspecialchars($imagePublicUrl) ?>">
         <input type="hidden" name="usuario_id" value="<?= $_SESSION['usuario_id'] ?>">
-
-        
 
         <div class="mb-3 mt-3">
           <label class="form-label">Observaciones del Dermatólogo</label>
-          <textarea name="observaciones" class="form-control" rows="2" required></textarea>
+          <textarea name="observaciones" class="form-control" rows="2" ><?= htmlspecialchars($_POST['observaciones'] ?? '') ?></textarea>
         </div>
         <div class="mb-3">
           <label class="form-label">Recomendaciones</label>
-          <textarea name="recomendacion" class="form-control" rows="1" required></textarea>
+          <textarea name="recomendacion" class="form-control" rows="1" ><?= htmlspecialchars($_POST['recomendacion'] ?? '') ?></textarea>
         </div>
-
         <div class="text-center card-footer">
-          <button type="submit" class="btn text-white" style="background-color:#28a688;">
-            GUARDAR DETECCIÓN
-          </button>
+          
+            <button type="submit" class="btn text-white" style="background-color:#28a688;" name="action" value="save" formaction="?controller=deteccion&action=save">GUARDAR DETECCIÓN</button>
+           
         </div>
       </form>
     </div>
@@ -531,6 +495,18 @@ if (!empty($_POST['selected_image'])) {
       { id: '<?= $id ?>', name: '<?= $name ?>' },
     <?php endforeach; ?>
   ];
+  inputName.addEventListener('input', function() {
+    var val = this.value.trim();
+    var match = patientsData.find(function(p) {
+      return p.name.toLowerCase() === val.toLowerCase();
+    });
+    if (match) {
+      inputId.value = match.id;
+    } else {
+      inputId.value = '';
+    }
+});
+
 </script>
 
 <!-- Script para cargar datos en el modal de detalles -->

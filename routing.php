@@ -14,6 +14,7 @@
 				require_once('Models/Usuario.php');
 				require_once('Models/HistoClinica.php');
 				require_once('Models/Paciente.php');
+				require_once('Models/Cita.php');
 
 				$controller= new UsuarioController();
 				break; 
@@ -46,6 +47,8 @@
 				 require_once('Models/Usuario.php');
 				require_once('Models/HistoClinica.php');
 				require_once('Models/Paciente.php');
+				require_once('Models/Cita.php');
+
 				$controller = new DeteccionController();
 				break;
 			case 'cita':  // Nuevo controlador

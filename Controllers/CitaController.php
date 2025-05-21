@@ -26,7 +26,9 @@ class CitaController
             $_POST['motivo'],
             $estado,
             $_POST['observaciones'],
-            null // fcreado_en: se asigna por la base de datos
+            null, // fcreado_en: se asigna por la base de datos
+            $_POST['usuario']
+
         );
         Cita::save($cita);
         $_SESSION['mensaje'] = 'Registro guardado satisfactoriamente';
@@ -64,7 +66,9 @@ class CitaController
             $_POST['motivo'],
             $_POST['estado'],
             $_POST['observaciones'],
-            null // fcreado_en no se actualiza, se mantiene el valor original o lo asigna la BD
+            null, // fcreado_en no se actualiza, se mantiene el valor original o lo asigna la BD
+            $_POST['usuario']
+
         );
     
         // Llamada al método update del modelo para actualizar la cita

@@ -4,7 +4,6 @@ if(!isset($_SESSION)) {
 }
 
 // Recuperar el sort y dir actuales para mostrar iconos y conservar en paginación
-// Por defecto, ordena por fecha (puedes cambiar según lo que necesites)
 $current_sort = isset($_SESSION['sort']) ? $_SESSION['sort'] : 'fecha';
 $current_dir  = isset($_SESSION['dir']) ? $_SESSION['dir'] : 'asc';
 
@@ -13,134 +12,171 @@ function invertDir($dir) {
   return ($dir === 'asc') ? 'desc' : 'asc';
 }
 ?>
+<?php
+$eventos=[];
 
-<div class="container text-center px-4 py-3" style="max-height: 85vh; overflow-y:auto;">
-  <h1 class="text-success mb-3">Lista de Citas</h1>
+foreach ($lista_citas as $cita) {
+    $fechaInicio = $cita->getFecha() . 'T' . $cita->getHora();
+    // Calcula la hora de finalización sumando 30 minutos
+    $horaFin = date('H:i:s', strtotime($cita->getHora() . ' +30 minutes'));
+    $fechaFin = $cita->getFecha() . 'T' . $horaFin;
+    $paciente = Paciente::getById($cita->getPaciente());
+    $nombrePaciente = $paciente ? $paciente->getNombres() . " " . $paciente->getApellidos() : "Desconocido";
+    $eventos[] = [
+        'id' => $cita->getId(),
+        'title' => $nombrePaciente . ' | ' . $cita->getMotivo(),
+        'start' => $fechaInicio,
+        'end'   => $fechaFin,
+        'estado' => strtolower($cita->getEstado()),
+        'extendedProps' => [
+            'estado' => strtolower($cita->getEstado()),
+            'observaciones' => $cita->getObservaciones()
+        ]
+    ];
+}
+?>
+<script>
+var eventos = <?php echo json_encode($eventos); ?>;
+</script>
+<style>
+/* Quita el subrayado de los títulos de los días en FullCalendar */
+.fc-col-header-cell-cushion,
+.fc-daygrid-day-number {
+  text-decoration: none !important;
+  color: #212529 !important;
+}
 
-  <!-- Formulario de búsqueda -->
-  <form class="row g-3 mb-3" action="?controller=cita&action=buscar" method="post">
-    <div class="col-auto">
-      <input class="form-control" id="search" name="searchTerm" type="text" placeholder="Buscar por fecha, motivo o paciente">
+/* Opcional: reduce el tamaño de fuente para que se vea más compacto */
+#calendario-citas .fc {
+  font-size: 0.92rem;
+}
+/* Box de evento colorido según estado */
+.evento-box {
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 0.95em;
+    font-weight: 500;
+    display: inline-block;
+    color: #212529;
+    background: #e9ecef;
+    border: 1px solid #dee2e6;
+    box-shadow: 1px 2px 4px rgba(80,80,80,0.06);
+    margin-bottom: 1px;
+}
+
+.box-pendiente  { background: #fff3cd; border-color: #ffecb5; }
+.box-cancelada  { background: #f8d7da; border-color: #f5c2c7; }
+.box-realizada  { background: #d1e7dd; border-color: #badbcc; }
+
+/* Quitar puntito por defecto */
+.fc-event-dot {
+    display: none !important;
+}
+
+/* Compactar evento en vista semanal */
+.fc .fc-timegrid-event .evento-box {
+    width: 100%;
+    white-space: normal;
+}
+</style>
+
+<div class="container py-4">
+    <div class="card shadow-sm mb-4 px-5 py-4">
+        <div class="card-body p-2">
+              <h4 class="mb-3 text-success">Calendario de Citas</h4>
+            <div id="calendario-citas" style="min-height: 400px;"></div>
+        </div>
     </div>
-    <div class="col-auto">
-      <button type="submit" class="btn btn-success">
-        <i class="bi bi-search"></i> Buscar
-      </button>
-    </div>
-  </form>
-
-  <!-- Mensaje de sesión, si existe -->
-  <?php if (isset($_SESSION['mensaje'])) { ?>
-    <div class="alert alert-success">
-      <strong><?php echo $_SESSION['mensaje']; ?></strong>
-    </div>
-  <?php unset($_SESSION['mensaje']); } ?>
-
-  <!-- Tabla responsiva -->
-  <div class="table-responsive">
-    <table class="table table-hover align-middle">
-      <thead class="table-success">
-        <tr>
-          <!-- Fecha -->
-          <th>
-            <a href="?controller=cita&action=show&sort=fecha&dir=<?php echo ($current_sort === 'fecha') ? invertDir($current_dir) : 'asc'; ?>" 
-               class="text-dark text-decoration-none">
-              Fecha
-              <?php if($current_sort === 'fecha'): ?>
-                <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
-              <?php endif; ?>
-            </a>
-          </th>
-          <!-- Hora -->
-          <th>
-            <a href="?controller=cita&action=show&sort=hora&dir=<?php echo ($current_sort === 'hora') ? invertDir($current_dir) : 'asc'; ?>" 
-               class="text-dark text-decoration-none">
-              Hora
-              <?php if($current_sort === 'hora'): ?>
-                <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
-              <?php endif; ?>
-            </a>
-          </th>
-          <!-- Paciente -->
-          <th>
-            <a href="?controller=cita&action=show&sort=paciente&dir=<?php echo ($current_sort === 'paciente') ? invertDir($current_dir) : 'asc'; ?>" 
-               class="text-dark text-decoration-none">
-              Paciente
-              <?php if($current_sort === 'paciente'): ?>
-                <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
-              <?php endif; ?>
-            </a>
-          </th>
-          <!-- Motivo -->
-          <th>
-            <a href="?controller=cita&action=show&sort=motivo&dir=<?php echo ($current_sort === 'motivo') ? invertDir($current_dir) : 'asc'; ?>" 
-               class="text-dark text-decoration-none">
-              Motivo
-              <?php if($current_sort === 'motivo'): ?>
-                <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
-              <?php endif; ?>
-            </a>
-          </th>
-          <!-- Estado -->
-          <th>
-            <a href="?controller=cita&action=show&sort=estado&dir=<?php echo ($current_sort === 'estado') ? invertDir($current_dir) : 'asc'; ?>" 
-               class="text-dark text-decoration-none">
-              Estado
-              <?php if($current_sort === 'estado'): ?>
-                <i class="bi bi-arrow-<?php echo ($current_dir === 'asc') ? 'down' : 'up'; ?>"></i>
-              <?php endif; ?>
-            </a>
-          </th>
-          <!-- Acciones -->
-          <th colspan="2" class="text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php 
-          // Se asume que $lista_citas contiene un arreglo de objetos Cita.
-          foreach ($lista_citas as $cita) { 
-            // Recuperar datos del paciente asociado para mostrar nombre y apellido
-            $paciente = Paciente::getById($cita->getPaciente());
-            $nombrePaciente = $paciente ? $paciente->getNombres() . " " . $paciente->getApellidos() : "Desconocido";
-        ?>
-          <tr>
-            <td><?php echo $cita->getFecha(); ?></td>
-            <td><?php echo $cita->getHora(); ?></td>
-            <td><?php echo $nombrePaciente; ?></td>
-            <td><?php echo $cita->getMotivo(); ?></td>
-            <td><?php echo ucfirst($cita->getEstado()); ?></td>
-            
-            <!-- Botón Actualizar -->
-            <td>
-              <button type="button" class="btn btn-warning"
-                      onclick="location.href='?controller=cita&action=showupdate&id=<?php echo $cita->getId()?>'">
-                <i class="bi bi-pencil"></i> Actualizar
-              </button>
-            </td>
-            
-            <!-- Botón Eliminar -->
-            <td>
-              <button type="button" class="btn btn-danger"
-                      onclick="location.href='?controller=cita&action=delete&id=<?php echo $cita->getId()?>'">
-                <i class="bi bi-trash"></i> Eliminar
-              </button>
-            </td>
-          </tr>
-        <?php } ?>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Paginación -->
-  <nav>
-    <ul class="pagination">
-      <?php for ($i = 1; $i <= $botones; $i++) { ?>
-        <li class="page-item <?php echo (isset($_GET['boton']) && $_GET['boton'] == $i) ? 'active' : ''; ?>">
-          <a class="page-link" href="?controller=cita&action=show&boton=<?php echo $i; ?>&sort=<?php echo $current_sort; ?>&dir=<?php echo $current_dir; ?>">
-            <?php echo $i; ?>
-          </a>
-        </li>
-      <?php } ?>
-    </ul>
-  </nav>
 </div>
+
+<!-- Modal para detalles de la cita -->
+<div class="modal fade" id="modalCita" tabindex="-1" aria-labelledby="modalCitaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="modalCitaLabel">Detalle de la cita</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" id="modalBodyCita">
+        <!-- Aquí se muestran los detalles de la cita -->
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendario-citas');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        locale: 'es',
+        slotMinTime: '08:00:00',
+        slotMaxTime: '20:00:00',
+        allDaySlot: false,
+        expandRows: true,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        buttonText: {
+            today:    'Hoy',
+            month:    'Mes',
+            week:     'Semana',
+            day:      'Día'
+        },
+        events: eventos,
+        eventOverlap: false,
+        slotDuration: '00:30:00',
+        eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+        eventClick: function(info) {
+            let cita = info.event;
+            let estado = cita.extendedProps.estado;
+            // Traducción del estado para mostrar bonito
+            let estadoTexto = "";
+            if(estado == "pendiente") estadoTexto = "Pendiente";
+            else if(estado == "cancelada") estadoTexto = "Cancelada";
+            else if(estado == "realizada") estadoTexto = "Realizada";
+            else estadoTexto = estado.charAt(0).toUpperCase() + estado.slice(1);
+
+            let detalles = `
+                <h5>${cita.title}</h5>
+                <p><strong>Fecha:</strong> ${cita.start.toLocaleDateString('es-ES')}</p>
+                <p><strong>Hora:</strong> ${cita.start.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'})}</p>
+                <p><strong>Estado:</strong> ${estadoTexto}</p>
+                <p><strong>Observaciones:</strong> ${cita.extendedProps.observaciones ? cita.extendedProps.observaciones : 'Sin observaciones'}</p>
+                <div class="mt-2">
+                  <a href='?controller=cita&action=showupdate&id=${cita.id}' class="btn btn-warning btn-sm me-1">
+                      <i class="bi bi-pencil"></i> Actualizar
+                  </a>
+                  <a href='?controller=cita&action=delete&id=${cita.id}' class="btn btn-danger btn-sm">
+                      <i class="bi bi-trash"></i> Eliminar
+                  </a>
+                </div>
+            `;
+            document.getElementById('modalBodyCita').innerHTML = detalles;
+            let myModal = new bootstrap.Modal(document.getElementById('modalCita'));
+            myModal.show();
+        },
+        height: 450,
+        eventContent: function(arg) {
+            let estado = arg.event.extendedProps.estado;
+            let bg = '';
+            if (estado === 'pendiente') bg = 'box-pendiente';
+            else if (estado === 'cancelada') bg = 'box-cancelada';
+            else if (estado === 'realizada') bg = 'box-realizada';
+            let hora = arg.timeText ? `<span class="me-1 text-secondary">${arg.timeText}</span>` : '';
+            return {
+                html: `<div class="evento-box ${bg}">${hora}<span>${arg.event.title}</span></div>`
+            };
+        }
+    });
+    calendar.render();
+});
+</script>
+
+<!-- Bootstrap (si ya lo usas, omite) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- FullCalendar -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>

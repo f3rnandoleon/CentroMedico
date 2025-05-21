@@ -69,7 +69,25 @@
             <textarea class="form-control" id="observaciones" name="observaciones" placeholder="Ingrese observaciones (opcional)"></textarea>
           </div>
         </div>
-        
+        <!-- Dermatólogo -->
+        <div class="mb-3 row">
+          <label for="usuario" class="col-sm-2 col-form-label">Dermatólogo:</label>
+          <div class="col-sm-10">
+            <select name="usuario" id="usuario" class="form-select" required>
+              <option value="">Seleccione un dermatólogo</option>
+              <?php 
+              $usuarios = Usuario::all();
+              foreach ($usuarios as $usuario) { 
+                if (strtolower($usuario->getRol()) == 'dermatologo') { ?>
+                  <option value="<?= $usuario->getId(); ?>">
+                    <?= $usuario->getNombres() . " " . $usuario->getApellidos(); ?>
+                  </option>
+              <?php }
+              } ?>
+            </select>
+          </div>
+        </div>
+
         <!-- Campo oculto para el estado de la cita, se asigna 'pendiente' por defecto -->
         <input type="hidden" name="estado" value="pendiente">
         
