@@ -2,12 +2,15 @@
 <?php
 // Id de usuario actual (debe estar en sesión)
 $idUser = $_SESSION['usuario_id'];
+date_default_timezone_set('America/La_Paz');
 
 // Citas de hoy de este usuario
 $hoy = date('Y-m-d');
 $citasHoy = [];
 foreach (Cita::getAllByUser($idUser) as $cita) {
     if (trim($cita->getFecha()) == $hoy) {
+      if($cita->getEstado()=="pendiente"){
+
         $paciente = Paciente::getById($cita->getPaciente());
         $nombrePaciente = $paciente ? $paciente->getNombres() . " " . $paciente->getApellidos() : "Desconocido";
         $citasHoy[] = [
@@ -16,6 +19,7 @@ foreach (Cita::getAllByUser($idUser) as $cita) {
             'motivo' => $cita->getMotivo(),
             'estado' => ucfirst($cita->getEstado())
         ];
+      }
     }
 }
 // Para el calendario (todas las citas de este usuario, igual que antes)
@@ -221,6 +225,7 @@ var eventos = <?php echo json_encode($eventos); ?>;
           </div>
         </div>
       </div>
+<?php if ($_SESSION['usuario_rol']=="Dermatologo") { ?>
 
       <!-- Citas de hoy -->
 <div class="col-md-3">
@@ -230,7 +235,10 @@ var eventos = <?php echo json_encode($eventos); ?>;
       <div style="min-height:70px; width: 100%;">
         <?php if (count($citasHoy) > 0): ?>
           <ul class="list-unstyled mb-1">
-            <?php foreach ($citasHoy as $cita): ?>
+            <?php foreach ($citasHoy as $cita): 
+              
+
+              ?>
               <li>
                 <span class="fw-bold"><?= $cita['hora'] ?></span>
                 - <?= $cita['paciente'] ?>
@@ -255,6 +263,9 @@ var eventos = <?php echo json_encode($eventos); ?>;
     </div>
   </div>
 
+  
+  <?php }?>
+
 <!-- Modal para el calendario -->
 <div class="modal fade" id="modalCalendario" tabindex="-1" aria-labelledby="modalCalendarioLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -270,6 +281,52 @@ var eventos = <?php echo json_encode($eventos); ?>;
     </div>
   </div>
 </div>
+<?php if ($_SESSION['usuario_rol']=="Admin") { 
+$totalCitas=Cita::All();
+$citasTotalesHoy=[];
+foreach ($totalCitas as $cita) {
+    if (trim($cita->getFecha()) == $hoy) {
+      if($cita->getEstado()=="pendiente"){
+        $paciente = Paciente::getById($cita->getPaciente());
+        $nombrePaciente = $paciente ? $paciente->getNombres() . " " . $paciente->getApellidos() : "Desconocido";
+        $citasTotalesHoy[] = [
+            'hora' => substr($cita->getHora(), 0, 5), // hh:mm
+            'paciente' => $nombrePaciente,
+            'motivo' => $cita->getMotivo(),
+            'estado' => ucfirst($cita->getEstado())
+        ];
+      }
+    }
+}
+?>
+      <!-- Citas de hoy -->
+<div class="col-md-3">
+  <div class="card stat-card border-start border-1 border-info">
+    <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="stat-title">Citas de Hoy</h5>
+              <h2 class="stat-number text-info mr-5">
+                <?php echo count($citasTotalesHoy); ?>
+                
+              </h2>
+            </div>
+            <i class="bi bi-book stat-icon text-info"></i>
+          </div>
+          <div class="card-footer">
+              <a href="?controller=cita&action=show" class="text-info">Ver todas mis citas →</a>
+            </div>
+   
+    
+  </div>
+</div>
+
+
+    </div>
+  </div>
+
+  
+  <?php }?>
+
 <script>
 // Usaremos una variable para el calendario
 let calendarInstance = null;

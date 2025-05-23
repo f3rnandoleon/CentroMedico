@@ -15,7 +15,7 @@ function invertDir($dir) {
 <?php
 $eventos=[];
 
-foreach ($lista_citas as $cita) {
+foreach ($citas as $cita) {
     $fechaInicio = $cita->getFecha() . 'T' . $cita->getHora();
     // Calcula la hora de finalización sumando 30 minutos
     $horaFin = date('H:i:s', strtotime($cita->getHora() . ' +30 minutes'));
@@ -103,6 +103,11 @@ var eventos = <?php echo json_encode($eventos); ?>;
     </div>
   </div>
 </div>
+<?php if (isset($_SESSION['mensaje'])): ?>
+  <div class="alert alert-success position-fixed top-20 start-50 translate-middle-x mt-3 shadow" style="z-index: 9999; max-width: 400px;">
+    <strong><?php echo $_SESSION['mensaje']; ?></strong>
+  </div>
+<?php endif; unset($_SESSION['mensaje']); ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendario-citas');
