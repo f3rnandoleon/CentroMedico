@@ -216,7 +216,7 @@ $textColor = ($predictionText === "") ? "var(--bs-gray-dark)" : "var(--bs-white)
 <div class="container mt-3 px-4" style="max-height: 84vh; overflow-y:auto;">
   <div class="card shadow custom-card">
     <div class="card-header text-center custom-card-header">
-      <h5 class="mb-0">Datos previos del informe médico</h5>
+      <h5 class="mb-0">Datos previos del reporte médico</h5>
     </div>
     <div class="card-body custom-card-body">
       <form action="" method="POST" enctype="multipart/form-data" class="custom-search-form">
@@ -489,10 +489,29 @@ $textColor = ($predictionText === "") ? "var(--bs-gray-dark)" : "var(--bs-white)
 <script>
   var patientsData = [
     <?php foreach ($pacientes as $paciente): 
-       $id   = $paciente->getId();
-       $name = addslashes($paciente->getNombres() . ' ' . $paciente->getApellidos());
+       $id         = $paciente->getId();
+       $name       = addslashes($paciente->getNombres() . ' ' . $paciente->getApellidos());
+       $cedula     = $paciente->getCedula();
+       $ocupacion  = $paciente->getOcupacion();
+       $estCivil   = $paciente->getEstcivil();
+       $genero     = $paciente->getGenero();
+       $fnacimiento= $paciente->getFnacimiento();
+       $email      = $paciente->getEmail();
+       $direccion  = $paciente->getDireccion();
+       $telefono   = $paciente->getTelefono();
     ?>
-      { id: '<?= $id ?>', name: '<?= $name ?>' },
+      { 
+        id: '<?= $id ?>', 
+        name: '<?= $name ?>',
+        cedula: '<?= $cedula ?>',
+        ocupacion: '<?= $ocupacion ?>',
+        estCivil: '<?= $estCivil ?>',
+        genero: '<?= $genero ?>',
+        fnacimiento: '<?= $fnacimiento ?>',
+        email: '<?= $email ?>',
+        direccion: '<?= $direccion ?>',
+        telefono: '<?= $telefono ?>'
+      },
     <?php endforeach; ?>
   ];
   inputName.addEventListener('input', function() {
@@ -571,10 +590,15 @@ $textColor = ($predictionText === "") ? "var(--bs-gray-dark)" : "var(--bs-white)
   // Encuentra el paciente (opcional, para info extra)
   var paciente = patientsData.find(function(p) { return p.id === id; });
 
-  // Si quieres mostrar los datos (necesitas PHP/Javascript que pase más info si no tienes en patientsData)
-  document.getElementById('patientNombre').textContent = paciente ? paciente.name : "-";
-  // ... si tienes más datos en patientsData, puedes mostrarlos aquí ...
-
+document.getElementById('patientCedula').textContent = paciente.cedula || "-";
+  document.getElementById('patientNombre').textContent = paciente.name || "-";
+  document.getElementById('patientOcupacion').textContent = paciente.ocupacion || "-";
+  document.getElementById('patientEstCivil').textContent = paciente.estCivil || "-";
+  document.getElementById('patientGenero').textContent = paciente.genero || "-";
+  document.getElementById('patientFnacimiento').textContent = paciente.fnacimiento || "-";
+  document.getElementById('patientEmail').textContent = paciente.email || "-";
+  document.getElementById('patientDireccion').textContent = paciente.direccion || "-";
+  document.getElementById('patientTelefono').textContent = paciente.telefono || "-";
   // Historial clínico:
   var historyTableBody = document.getElementById('historyTableBody');
   historyTableBody.innerHTML = "";

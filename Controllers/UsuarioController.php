@@ -281,8 +281,10 @@ class UsuarioController
 		require_once('Views/Deteccion/bienvenido.php');
 	} 
 	public function reportGeneral(){
-		$melanomas=HistoClinica::findByMelanoma();
-		$nomelanomas=HistoClinica::findByNoMelanoma();
+		$historiales=HistoClinica::all();
+		$pacientes=Paciente::all();
+		$usuarios=Usuario::all();
+
 		require_once('Views/ReportGeneral/show.php');
 	} 
 
@@ -310,6 +312,7 @@ class UsuarioController
 			$_SESSION['usuario']=True;//inicio de sesion de usuario				
 			//require_once('Views/Layouts/layout.php');
 			header('Location: index.php');
+			exit;
 		}else{
 			$_SESSION['mensaje']='Email o contraseña invalidos';
 			$this->showLogin();

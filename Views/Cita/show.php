@@ -13,28 +13,53 @@ function invertDir($dir) {
 }
 ?>
 <?php
-$eventos=[];
+// Mapeo rápido por ID:
+$mapPacientes = [];
+foreach ($pacientes as $p) {
+    $mapPacientes[$p->getId()] = $p;
+}
+$mapUsuarios = [];
+foreach ($usuarios as $u) {
+    $mapUsuarios[$u->getId()] = $u;
+}
 
+// Preparamos los eventos
+$eventos = [];
 foreach ($citas as $cita) {
     $fechaInicio = $cita->getFecha() . 'T' . $cita->getHora();
-    // Calcula la hora de finalización sumando 30 minutos
-    $horaFin = date('H:i:s', strtotime($cita->getHora() . ' +30 minutes'));
-    $fechaFin = $cita->getFecha() . 'T' . $horaFin;
-    $paciente = Paciente::getById($cita->getPaciente());
-    $nombrePaciente = $paciente ? $paciente->getNombres() . " " . $paciente->getApellidos() : "Desconocido";
+    $horaFin     = date('H:i:s', strtotime($cita->getHora() . ' +30 minutes'));
+    $fechaFin    = $cita->getFecha() . 'T' . $horaFin;
+
+    // Paciente
+    $pac = $mapPacientes[$cita->getPaciente()] ?? null;
+    $nombrePaciente = $pac
+        ? $pac->getNombres() . ' ' . $pac->getApellidos()
+        : 'Paciente #' . $cita->getPaciente();
+
+    // Dermatólogo (usuario)
+    $usr = $mapUsuarios[$cita->getUsuario()] ?? null;
+    $nombreDerm = $usr
+        ? $usr->getNombres() . ' ' . $usr->getApellidos()
+        : 'Doctor #' . $cita->getUsuario();
+
     $eventos[] = [
-        'id' => $cita->getId(),
-        'title' => $nombrePaciente . ' | ' . $cita->getMotivo(),
-        'start' => $fechaInicio,
-        'end'   => $fechaFin,
-        'estado' => strtolower($cita->getEstado()),
-        'extendedProps' => [
-            'estado' => strtolower($cita->getEstado()),
-            'observaciones' => $cita->getObservaciones()
+        'id'            => $cita->getId(),
+        'title'         => $nombrePaciente . ' | ' . $cita->getMotivo(),
+        'start'         => $fechaInicio,
+        'end'           => $fechaFin,
+        'extendedProps'=> [
+            'estado'        => strtolower($cita->getEstado()),
+            'observaciones' => $cita->getObservaciones(),
+            'dermatologo'   => $nombreDerm,
         ]
     ];
 }
 ?>
+<script>
+  // Lo pasamos a JS
+  var eventos = <?php echo json_encode($eventos, JSON_UNESCAPED_UNICODE); ?>;
+</script>
+
 <script>
 var eventos = <?php echo json_encode($eventos); ?>;
 </script>
@@ -109,6 +134,9 @@ var eventos = <?php echo json_encode($eventos); ?>;
   </div>
 <?php endif; unset($_SESSION['mensaje']); ?>
 <script>
+  var eventos = <?php echo json_encode($eventos); ?>;
+</script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendario-citas');
     var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -133,35 +161,38 @@ document.addEventListener('DOMContentLoaded', function() {
         eventOverlap: false,
         slotDuration: '00:30:00',
         eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-        eventClick: function(info) {
-            let cita = info.event;
-            let estado = cita.extendedProps.estado;
-            // Traducción del estado para mostrar bonito
-            let estadoTexto = "";
-            if(estado == "pendiente") estadoTexto = "Pendiente";
-            else if(estado == "cancelada") estadoTexto = "Cancelada";
-            else if(estado == "realizada") estadoTexto = "Realizada";
-            else estadoTexto = estado.charAt(0).toUpperCase() + estado.slice(1);
+        events: eventos,
+      eventClick: function(info) {
+        let e   = info.event;
+        let p   = e.extendedProps;
+        let est = p.estado;
+        let estadoTexto = {
+          pendiente: 'Pendiente',
+          cancelada: 'Cancelada',
+          realizada: 'Realizada'
+        }[est] || est.charAt(0).toUpperCase() + est.slice(1);
 
-            let detalles = `
-                <h5>${cita.title}</h5>
-                <p><strong>Fecha:</strong> ${cita.start.toLocaleDateString('es-ES')}</p>
-                <p><strong>Hora:</strong> ${cita.start.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'})}</p>
-                <p><strong>Estado:</strong> ${estadoTexto}</p>
-                <p><strong>Observaciones:</strong> ${cita.extendedProps.observaciones ? cita.extendedProps.observaciones : 'Sin observaciones'}</p>
-                <div class="mt-2">
-                  <a href='?controller=cita&action=showupdate&id=${cita.id}' class="btn btn-warning btn-sm me-1">
-                      <i class="bi bi-pencil"></i> Actualizar
-                  </a>
-                  <a href='?controller=cita&action=delete&id=${cita.id}' class="btn btn-danger btn-sm">
-                      <i class="bi bi-trash"></i> Eliminar
-                  </a>
-                </div>
-            `;
-            document.getElementById('modalBodyCita').innerHTML = detalles;
-            let myModal = new bootstrap.Modal(document.getElementById('modalCita'));
-            myModal.show();
-        },
+        // Construimos el HTML
+        let html = `
+          <h5>${e.title}</h5>
+          <p><strong>Dermatólogo:</strong> ${p.dermatologo}</p>
+          <p><strong>Fecha:</strong> ${e.start.toLocaleDateString('es-ES')}</p>
+          <p><strong>Hora:</strong> ${e.start.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</p>
+          <p><strong>Estado:</strong> ${estadoTexto}</p>
+          <p><strong>Observaciones:</strong> ${p.observaciones || 'Sin observaciones'}</p>
+          <div class="mt-2">
+            <a href="?controller=cita&action=showupdate&id=${e.id}" class="btn btn-warning btn-sm me-1">
+              <i class="bi bi-pencil"></i> Actualizar
+            </a>
+            <a href="?controller=cita&action=delete&id=${e.id}" class="btn btn-danger btn-sm">
+              <i class="bi bi-trash"></i> Eliminar
+            </a>
+          </div>
+        `;
+        document.getElementById('modalBodyCita').innerHTML = html;
+        new bootstrap.Modal(document.getElementById('modalCita')).show();
+      },
+
         height: 450,
         eventContent: function(arg) {
             let estado = arg.event.extendedProps.estado;

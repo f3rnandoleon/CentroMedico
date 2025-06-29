@@ -14,11 +14,14 @@ foreach (Cita::getAllByUser($idUser) as $cita) {
         $paciente = Paciente::getById($cita->getPaciente());
         $nombrePaciente = $paciente ? $paciente->getNombres() . " " . $paciente->getApellidos() : "Desconocido";
         $citasHoy[] = [
-            'hora' => substr($cita->getHora(), 0, 5), // hh:mm
-            'paciente' => $nombrePaciente,
-            'motivo' => $cita->getMotivo(),
-            'estado' => ucfirst($cita->getEstado())
-        ];
+    'id' => $cita->getId(),
+    'hora' => substr($cita->getHora(), 0, 5),
+    'paciente' => $nombrePaciente,
+    'motivo' => $cita->getMotivo(),
+    'estado' => strtolower($cita->getEstado())
+];
+
+
       }
     }
 }
@@ -142,6 +145,23 @@ var eventos = <?php echo json_encode($eventos); ?>;
     .stat-card .card-footer a:hover {
       text-decoration: underline;
     }
+    /* Los mismos estilos que usabas antes para los boxes */
+.evento-box {
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 0.95em;
+    font-weight: 500;
+    display: inline-block;
+    color: #212529;
+    background: #e9ecef;
+    border: 1px solid #dee2e6;
+    box-shadow: 1px 2px 4px rgba(80,80,80,0.06);
+    margin-bottom: 1px;
+}
+
+.box-pendiente  { background: #fff3cd; border-color: #ffecb5; }
+.box-cancelada  { background: #f8d7da; border-color: #f5c2c7; }
+.box-realizada  { background: #d1e7dd; border-color: #badbcc; }
   </style>
 </head>
 <body>
@@ -159,7 +179,7 @@ var eventos = <?php echo json_encode($eventos); ?>;
           </span>
           <div class="greeting">
             <h2>¡Buen día, <?php echo $_SESSION['usuario_nombre'] ; ?>!</h2>
-            <p>Que tengas un excelente inicio de semana.</p>
+            <p>Que tengas un excelente día.</p>
           </div>
         </div>
         <!-- aquí la ilustración está en el fondo, puedes dejar un hueco vacío a la derecha -->
@@ -176,7 +196,7 @@ var eventos = <?php echo json_encode($eventos); ?>;
       <div class="col-md-3">
         <div class="card stat-card border-start border-1 border-primary">
           <div class="card-body d-flex justify-content-between align-items-center">
-            <div>
+            <div style="min-height:110px; width: 100%;">
               <h5 class="stat-title">Total Pacientes</h5>
               <h2 class="stat-number text-primary">
                 <?php echo count($pacientes); ?>
@@ -194,7 +214,7 @@ var eventos = <?php echo json_encode($eventos); ?>;
       <div class="col-md-3">
         <div class="card stat-card border-start border-1 border-warning">
           <div class="card-body d-flex justify-content-between align-items-center">
-            <div>
+            <div style="min-height:110px; width: 100%;">
               <h5 class="stat-title">Total Historiales</h5>
               <h2 class="stat-number text-warning">
                 <?php echo count($historias); ?>
@@ -212,7 +232,7 @@ var eventos = <?php echo json_encode($eventos); ?>;
       <div class="col-md-3">
         <div class="card stat-card border-start border-1 border-success">
           <div class="card-body d-flex justify-content-between align-items-center">
-            <div>
+            <div style="min-height:110px; width: 100%;">
               <h5 class="stat-title">Melanomas Detectadas</h5>
               <h2 class="stat-number text-success">
                 <?php echo count($melanomas); ?>
@@ -230,18 +250,21 @@ var eventos = <?php echo json_encode($eventos); ?>;
       <!-- Citas de hoy -->
 <div class="col-md-3">
   <div class="card stat-card border-start border-1 border-info">
-    <div class="card-body d-flex flex-column align-items-start justify-content-between">
-      <h5 class="stat-title mb-2">Citas de hoy</h5>
-      <div style="min-height:70px; width: 100%;">
+    <div class="card-body d-flex flex-column align-items-start justify-content-between" >
+      <h5 class="stat-title">Citas de hoy</h5>
+      <div style="max-height:90px; min-height:90px;  width: 100%;">
         <?php if (count($citasHoy) > 0): ?>
-          <ul class="list-unstyled mb-1">
-            <?php foreach ($citasHoy as $cita): 
-              
-
-              ?>
-              <li>
-                <span class="fw-bold"><?= $cita['hora'] ?></span>
-                - <?= $cita['paciente'] ?>
+          <ul class="list-unstyled mb-1" style="max-height: 110px;min-width: 240px; overflow-y:scroll;">
+            <?php foreach ($citasHoy as $cita): ?>
+              <li class="d-flex align-items-start mb-1" >
+                <form method="post" action="?controller=cita&action=marcarRealizadaSubmit" class="me-1 mb-0 p-0" style="display:inline;">
+                  <input type="hidden" name="id" value="<?= $cita['id'] ?>">
+                  <button type="submit" class="btn btn-sm btn-outline-success p-2"
+                    title="Marcar como realizada">   
+                  </button>
+                </form>
+                <span class="fw-bold me-3 "><?= $cita['hora'] ?></span>
+                <span style="font-size: 0.9rem;"> <?= $cita['paciente'] ?></span>
                 <span class="text-muted">(<?= $cita['motivo'] ?>)</span>
               </li>
             <?php endforeach; ?>
@@ -303,7 +326,7 @@ foreach ($totalCitas as $cita) {
 <div class="col-md-3">
   <div class="card stat-card border-start border-1 border-info">
     <div class="card-body d-flex justify-content-between align-items-center">
-            <div>
+            <div style="min-height:110px;max-height:110px; width: 100%;">
               <h5 class="stat-title">Citas de Hoy</h5>
               <h2 class="stat-number text-info mr-5">
                 <?php echo count($citasTotalesHoy); ?>
@@ -409,26 +432,42 @@ document.addEventListener('DOMContentLoaded', function() {
   updateDateTime();
   setInterval(updateDateTime, 30 * 1000);
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.marcar-realizada').forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+      var idCita = this.getAttribute('data-id');
+      var li = document.getElementById('cita-' + idCita);
+      var self = this;
+      if (this.checked) {
+        fetch('?controller=cita&action=marcarRealizada', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'id=' + encodeURIComponent(idCita)
+        })
+        .then(response => response.text())
+        .then(text => {
+          if (text.trim() === "OK") {
+            if (li) li.remove();
+          } else {
+            alert('No se pudo actualizar el estado.');
+            self.checked = false;
+          }
+        })
+        .catch(() => {
+          alert('Error de conexión.');
+          self.checked = false;
+        });
+      }
+    });
+  });
+});
+
+</script>
+
+
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
-<style>
-/* Los mismos estilos que usabas antes para los boxes */
-.evento-box {
-    padding: 2px 8px;
-    border-radius: 8px;
-    font-size: 0.95em;
-    font-weight: 500;
-    display: inline-block;
-    color: #212529;
-    background: #e9ecef;
-    border: 1px solid #dee2e6;
-    box-shadow: 1px 2px 4px rgba(80,80,80,0.06);
-    margin-bottom: 1px;
-}
-
-.box-pendiente  { background: #fff3cd; border-color: #ffecb5; }
-.box-cancelada  { background: #f8d7da; border-color: #f5c2c7; }
-.box-realizada  { background: #d1e7dd; border-color: #badbcc; }
-</style>

@@ -53,6 +53,7 @@
 				break;
 			case 'cita':  // Nuevo controlador
 				 // Carga el modelo si es necesario
+				require_once('Models/HistoClinica.php');
 				 require_once('Models/Usuario.php');
 				 require_once('Models/Paciente.php'); // Para obtener datos de pacientes si se requieren en la vista
 				 require_once('Models/Cita.php'); // Modelo de la cita
@@ -71,7 +72,7 @@
 						'historia'=>['register','save', 'show', 'showupdate','update', 'delete','reporteHistorico','reporte','buscar'],
 						'consulta'=>['register','save','show', 'showupdate','update','recetaPdf','buscar'],
 						'deteccion'=>['detectar','save'],
-						'cita'=>['register','save','show','update','showupdate','error','buscar','delete']
+						'cita'=>['register','save','show','update','showupdate','error','buscar','delete','marcarRealizadaSubmit','welcome']
 						);
 						if ($controller == 'historia' && $action == 'reporte') {
 							require_once('./Controllers/generar_reporte.php');

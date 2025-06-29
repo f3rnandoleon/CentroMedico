@@ -32,7 +32,7 @@ function invertDir($dir) {
     <!-- Formulario de búsqueda -->
     <form class=" row g-3 align-items-center mb-3" action="?controller=historia&action=buscar" method="post">
       <div class="col-10">
-        <input type="text" class="form-control" id="searchTerm" name="searchTerm" placeholder="0001">
+        <input type="text" class="form-control" id="searchTerm" name="searchTerm" placeholder="Buscar paciente...">
       </div>
       <div class="col-2">
         <button type="submit" class="btn btn-success">

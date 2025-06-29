@@ -12,7 +12,13 @@ class CitaController
     public function register(){
         require_once('Views/Cita/register.php');
     }
-
+    public function welcome(){
+		$historias=HistoClinica::all();
+		$pacientes=Paciente::all();
+		$melanomas=HistoClinica::findByMelanoma();
+		$nomelanomas=HistoClinica::findByNoMelanoma();
+		require_once('Views/Deteccion/bienvenido.php');
+	} 
     // Guarda una nueva cita
     public function save(){
         // Si no se envía estado lo asignamos por defecto a 'pendiente'
@@ -85,7 +91,8 @@ class CitaController
     public function show(){
         // Obtenemos todas las citas
         $citas = Cita::all();
-        
+        $usuarios=Usuario::all();
+        $pacientes = Paciente::all();
         // Leer parámetros de ordenamiento
         $sort = isset($_GET['sort']) ? $_GET['sort'] : 'fecha'; // por defecto se ordena por fecha
         $dir  = isset($_GET['dir']) ? $_GET['dir'] : 'asc';      // dirección ascendente por defecto
@@ -153,6 +160,23 @@ class CitaController
             $this->show();
         }
     }
+    public function marcarRealizadaSubmit() {
+    $id = $_POST['id'] ?? null;
+    if ($id) {
+        $cita = Cita::getBy($id);
+        if ($cita) {
+            $cita->setEstado('realizada');
+            Cita::update($cita);
+        }
+    }
+   $this->welcome();
+
+}
+
+
+
+
+
 
     // Ejemplo de reporte
     public function reporte(){
